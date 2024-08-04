@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "450934451399",
+    "project_id": "notice-board-fa6ce",
+    "storage_bucket": "notice-board-fa6ce.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:450934451399:android:fc18547b15976c54a262e2",
+        "android_client_info": {
+          "package_name": "com.example.board_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwQRDcG6q5on0Cx8OqMP8Ct4WJU5F2YB0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

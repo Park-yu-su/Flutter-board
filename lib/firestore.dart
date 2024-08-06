@@ -85,29 +85,16 @@ Future<List<Map<String, dynamic>>> getBoardFromFirestore(int mode) async {
   return boardList;
 }
 
-void addContentToFirestore(int a, DateTime now) async {
-  List<Map<String, dynamic>> ex = [
-    {
-      'commentAuthor': 'ex',
-      'commentContent': '연습입니다.',
-      'commentTimestamp': Timestamp.fromDate(now)
-    },
-    {
-      'commentAuthor': 'ex2',
-      'commentContent': '연습입니다.2',
-      'commentTimestamp': Timestamp.fromDate(now)
-    }
-  ];
-
+void addContentToFirestore(BoardContent content) async {
   await FirebaseFirestore.instance.collection('board').add({
-    'attribute': '공지',
-    'author': '관리자$a',
-    'content': '연습입니다$a',
-    'title': '연습$a',
-    'time': Timestamp.fromDate(now),
-    'watch': 0,
-    'comments': ex,
+    'attribute': content.attribute,
+    'author': content.author,
+    'content': content.content,
+    'title': content.title,
+    'time': content.time,
+    'watch': content.watch,
+    'comments': content.comments,
   });
 
-  print('add OK $now');
+  print('add OK ${content.time}');
 }

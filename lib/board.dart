@@ -4,24 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'firestore.dart';
 import 'boardContent.dart';
 
-/*
-{
-  "title": "게시글 제목",
-  "content": "게시글 내용",
-  "author": "작성자 UID",
-  "timestamp": "게시일",
-  "attribute": "속성"
-  "watch" : "조회 수"
-  "comments": [
-    {
-      "commentContent": "댓글 내용",
-      "commentAuthor": "댓글 작성자 UID",
-      "commentTimestamp": "댓글 작성일"
-    }
-  ]
-}
-*/
-
 class Board extends StatelessWidget {
   const Board({super.key});
 
@@ -46,7 +28,6 @@ class BoardScreen extends StatefulWidget {
 class _BoardScreenState extends State<BoardScreen>
     with TickerProviderStateMixin {
   late TabController tabController;
-  int a = 0;
   int currentPage = 0; //현재 페이지에 해당하는 리스트를 출력력
 
   @override
@@ -68,7 +49,7 @@ class _BoardScreenState extends State<BoardScreen>
               child: TabBar(
                 controller: tabController,
                 isScrollable: true,
-                tabs: [
+                tabs: const [
                   Tab(text: '전체'),
                   Tab(text: '공지'),
                   Tab(text: '정보'),
@@ -85,8 +66,6 @@ class _BoardScreenState extends State<BoardScreen>
                     onPressed: () {
                       setState(() {
                         DateTime now = DateTime.now();
-                        addContentToFirestore(a, now);
-                        a++;
                       });
                     },
                     icon: Icon(Icons.search),
@@ -96,7 +75,9 @@ class _BoardScreenState extends State<BoardScreen>
                   padding: const EdgeInsets.only(right: 10),
                   child: IconButton(
                     onPressed: () {
-                      setState(() {});
+                      setState(() {
+                        navigateWrite(context);
+                      });
                     },
                     icon: Icon(Icons.create),
                   ),
@@ -122,6 +103,12 @@ class _BoardScreenState extends State<BoardScreen>
 
   void navigateContent(BuildContext context, BoardContent thisContent) async {
     final result = await context.push('/content', extra: thisContent);
+    setState(() {});
+  }
+
+  void navigateWrite(BuildContext context) async {
+    final result = await context.push('/write');
+    setState(() {});
   }
 
   Widget buildBoardList(int mode) {
@@ -237,6 +224,7 @@ class _BoardScreenState extends State<BoardScreen>
                                 pageBoardData[realIndex]['title'] ?? '',
                                 pageBoardData[realIndex]['content'] ?? '',
                                 pageBoardData[realIndex]['author'] ?? '',
+                                "잡담",
                                 datetime,
                                 comments,
                                 pageBoardData[realIndex]['watch'] ?? 0,

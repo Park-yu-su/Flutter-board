@@ -1,10 +1,11 @@
 class BoardContent {
-  String title;
-  String content;
-  String author;
-  DateTime time;
-  List<Map<String, dynamic>> comments;
-  int watch;
+  String title; //제목
+  String content; //본문
+  String author; //글쓴이
+  DateTime time; //시간
+  String attribute; //속성(타입)
+  List<Map<String, dynamic>> comments; //댓글
+  int watch; //본 수
 
   /*
   주의할 점
@@ -19,6 +20,24 @@ class BoardContent {
   
   */
 
-  BoardContent(this.title, this.content, this.author, this.time, this.comments,
-      this.watch);
+  BoardContent(this.title, this.content, this.author, this.attribute, this.time,
+      this.comments, this.watch);
 }
+
+/*
+{
+  "title": "게시글 제목",
+  "content": "게시글 내용",
+  "author": "작성자 UID",
+  "timestamp": "게시일",
+  "attribute": "속성"
+  "watch" : "조회 수"
+  "comments": [
+    {
+      "commentContent": "댓글 내용",
+      "commentAuthor": "댓글 작성자 UID",
+      "commentTimestamp": "댓글 작성일"
+    }
+  ]
+}
+*/

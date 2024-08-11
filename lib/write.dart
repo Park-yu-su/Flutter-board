@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'boardContent.dart';
 import 'firestore.dart';
+import 'package:uuid/uuid.dart';
 
 class Write extends StatefulWidget {
   @override
@@ -10,7 +11,9 @@ class Write extends StatefulWidget {
 
 class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
   final TextEditingController _titleController = TextEditingController();
-  String selectedCategory = "공지";
+
+  String selectedCategory = "공지"; //글쓰기 tab
+  var uuid = Uuid(); //각 게시글의 ID
 
   //작성한 내용이 담길 객체
   late BoardContent writeResult;
@@ -22,11 +25,19 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
   String attribute = '';
   List<Map<String, dynamic>> comments = [];
   int watch = 0;
+  String id = '';
+
+  @override
+  void initState() {
+    id = uuid.v4();
+    attribute = selectedCategory;
+    super.initState();
+  }
 
   void makeContent() {
     time = DateTime.now();
-    writeResult =
-        BoardContent(title, content, author, attribute, time, comments, watch);
+    writeResult = BoardContent(
+        title, content, author, attribute, time, comments, watch, id);
     addContentToFirestore(writeResult);
   }
 

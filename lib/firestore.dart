@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'boardContent.dart';
 
-void addDataToFirestore(
+void addUserInfoToFirestore(
     String _username, String _email, String _password) async {
   await FirebaseFirestore.instance.collection('user').add({
     'username': _username,
@@ -10,7 +10,7 @@ void addDataToFirestore(
   });
 }
 
-Future<Map<String, dynamic>?> getDataFromFirestore(
+Future<Map<String, dynamic>?> getUserInfoFromFirestore(
     String email, String password) async {
   Map<String, dynamic>? user;
 
@@ -31,7 +31,6 @@ Future<Map<String, dynamic>?> getDataFromFirestore(
 
 Future<List<Map<String, dynamic>>> getBoardFromFirestore(int mode) async {
   List<Map<String, dynamic>> boardList;
-
   try {
     QuerySnapshot querySnapshot;
 
@@ -91,10 +90,38 @@ void addContentToFirestore(BoardContent content) async {
     'author': content.author,
     'content': content.content,
     'title': content.title,
-    'time': content.time,
+    'time': Timestamp.fromDate(content.time),
     'watch': content.watch,
     'comments': content.comments,
+    'id': content.id,
   });
 
-  print('add OK ${content.time}');
+  print('add OK ${content.time}\n ${content.id}');
+}
+
+void updateContentToFirestore(BoardContent content) async {
+  //class에 존재하는 필드값을 토대로 해당 문서를 찾고 이를 업데이트
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  QuerySnapshot querySnapshot = await firestore
+      .collection('board')
+      .where('id', isEqualTo: content.id)
+      .where('title', isEqualTo: content.title)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    for (var doc in querySnapshot.docs) {
+      await doc.reference.update({
+        'attribute': content.attribute,
+        'author': content.author,
+        'content': content.content,
+        'title': content.title,
+        'time': Timestamp.fromDate(content.time),
+        'watch': content.watch,
+        'comments': content.comments,
+        'id': content.id,
+      });
+    }
+  } else {
+    print('No documents in database');
+  }
 }

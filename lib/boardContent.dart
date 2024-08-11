@@ -6,6 +6,7 @@ class BoardContent {
   String attribute; //속성(타입)
   List<Map<String, dynamic>> comments; //댓글
   int watch; //본 수
+  String id; //해당 글의 ID
 
   /*
   주의할 점
@@ -13,6 +14,10 @@ class BoardContent {
   가져올 경우, DateTime 형태로 변환한 후 사용을 요구한다.
 
   DateTime datetime = timestamp.toDate(); <- 예시
+  
+  firestore에 저장할 때에는 timStamp형태로 저장이 요구된다.
+  DateTime commentTime = DateTime.now(); <- (x)
+  Timestamp commentTime = Timestamp.now(); <- (O)
 
   마찬가지로 comments의 경우 Map의 요소로 
   String(댓글쓴이) / String(댓글 내용) / TimeStamp(댓글 시간) 형태를 가지고 있으니
@@ -21,7 +26,7 @@ class BoardContent {
   */
 
   BoardContent(this.title, this.content, this.author, this.attribute, this.time,
-      this.comments, this.watch);
+      this.comments, this.watch, this.id);
 }
 
 /*

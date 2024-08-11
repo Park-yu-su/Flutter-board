@@ -156,7 +156,7 @@ class _BoardScreenState extends State<BoardScreen>
                             child: const Row(
                               children: [
                                 Expanded(
-                                  flex: 1,
+                                  flex: 10,
                                   child: Center(
                                     child: Text(
                                       '분류',
@@ -167,7 +167,7 @@ class _BoardScreenState extends State<BoardScreen>
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 4,
+                                  flex: 40,
                                   child: Center(
                                     child: Text(
                                       '제목',
@@ -178,7 +178,7 @@ class _BoardScreenState extends State<BoardScreen>
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 1,
+                                  flex: 10,
                                   child: Center(
                                     child: Text(
                                       '작성자',
@@ -189,7 +189,11 @@ class _BoardScreenState extends State<BoardScreen>
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 1,
+                                  flex: 2,
+                                  child: SizedBox(),
+                                ),
+                                Expanded(
+                                  flex: 10,
                                   child: Center(
                                     child: Text(
                                       '날짜',
@@ -224,10 +228,11 @@ class _BoardScreenState extends State<BoardScreen>
                                 pageBoardData[realIndex]['title'] ?? '',
                                 pageBoardData[realIndex]['content'] ?? '',
                                 pageBoardData[realIndex]['author'] ?? '',
-                                "잡담",
+                                pageBoardData[realIndex]['attribute'] ?? '',
                                 datetime,
                                 comments,
                                 pageBoardData[realIndex]['watch'] ?? 0,
+                                pageBoardData[realIndex]['id'] ?? '',
                               );
 
                               navigateContent(context, thisContent);
@@ -240,41 +245,50 @@ class _BoardScreenState extends State<BoardScreen>
                               child: Row(
                                 children: [
                                   Expanded(
-                                    flex: 1,
+                                    flex: 10,
                                     child: Center(
                                       child: Text(
                                         pageBoardData[realIndex]['attribute'] ??
                                             '',
-                                        style: const TextStyle(fontSize: 16),
+                                        style: const TextStyle(fontSize: 14),
                                       ),
                                     ),
                                   ),
                                   Expanded(
-                                    flex: 4,
+                                    flex: 40,
                                     child: Padding(
                                       padding: const EdgeInsets.only(left: 5),
                                       child: Text(
                                         pageBoardData[realIndex]['title'] ?? '',
-                                        style: const TextStyle(fontSize: 16),
+                                        style: const TextStyle(fontSize: 14),
                                       ),
                                     ),
                                   ),
                                   Expanded(
-                                    flex: 1,
+                                    flex: 10,
                                     child: Center(
                                       child: Text(
                                         pageBoardData[realIndex]['author'] ??
                                             '',
-                                        style: const TextStyle(fontSize: 16),
+                                        style: const TextStyle(fontSize: 14),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ),
+                                  const Expanded(
+                                    flex: 2,
+                                    child: SizedBox(),
+                                  ),
                                   Expanded(
-                                    flex: 1,
-                                    child: Center(
-                                      child: Text(
-                                        dayformat,
-                                        style: const TextStyle(fontSize: 16),
+                                    flex: 10,
+                                    child: FittedBox(
+                                      fit: BoxFit.contain,
+                                      child: Center(
+                                        child: Text(
+                                          dayformat,
+                                          style: const TextStyle(fontSize: 14),
+                                          textAlign: TextAlign.center,
+                                        ),
                                       ),
                                     ),
                                   ),

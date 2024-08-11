@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'boardContent.dart';
+import 'firestore.dart';
 
 class Content extends StatefulWidget {
   final BoardContent thisContent;
@@ -14,12 +15,14 @@ class Content extends StatefulWidget {
 class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
   final TextEditingController _commentController = TextEditingController();
   late BoardContent thisContent;
+  String commentInput = "";
 
   @override
   void initState() {
     super.initState();
     thisContent = widget.thisContent;
-    print(thisContent.author);
+    thisContent.watch += 1;
+    updateContentToFirestore(thisContent);
   }
 
   @override
@@ -40,7 +43,7 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
           children: [
             //제목
             Text(
-              '${thisContent.title}',
+              thisContent.title,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -50,19 +53,12 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '작성자: ${thisContent.author}',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                Text(
-                  '조회 수: ${thisContent.watch + 1}  |  댓글: ${thisContent.comments.length}',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                Text(
-                  dayformat,
+                  '${thisContent.author}  |  $dayformat  |  조회 수: ${thisContent.watch}',
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
+
             const Divider(thickness: 1.5),
             const SizedBox(height: 5),
             //본문
@@ -119,12 +115,27 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         scrollPhysics: BouncingScrollPhysics(),
+                        onChanged: (value) {
+                          commentInput = value;
+                        },
                       ),
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.send),
-                    onPressed: () {},
+                    onPressed: () {
+                      Timestamp commentTime = Timestamp.now();
+                      Map<String, dynamic> tempComment = {
+                        "commentAuthor": "임시",
+                        "commentContent": commentInput,
+                        "commentTimestamp": commentTime,
+                      };
+                      thisContent.comments.add(tempComment);
+                      setState(() {
+                        updateContentToFirestore(thisContent);
+                        _commentController.clear();
+                      });
+                    },
                   ),
                 ],
               ),
@@ -134,8 +145,15 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
 }
 
+//댓글 list 양식
 class CommentFormat extends StatelessWidget {
   final String commentAuthor;
   final String commentContent;

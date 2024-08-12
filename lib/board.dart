@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'firestore.dart';
-import 'boardContent.dart';
+import 'board_content.dart';
+import 'package:provider/provider.dart';
+import 'user_status.dart';
 
 class Board extends StatelessWidget {
   const Board({super.key});
@@ -38,6 +40,8 @@ class _BoardScreenState extends State<BoardScreen>
 
   @override
   Widget build(BuildContext context) {
+    var userStatus = Provider.of<UserStatus>(context, listen: false);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: DefaultTabController(
@@ -71,17 +75,18 @@ class _BoardScreenState extends State<BoardScreen>
                     icon: Icon(Icons.search),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        navigateWrite(context);
-                      });
-                    },
-                    icon: Icon(Icons.create),
+                if (userStatus.loginCheck)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          navigateWrite(context);
+                        });
+                      },
+                      icon: Icon(Icons.create),
+                    ),
                   ),
-                ),
               ],
             ),
             Expanded(

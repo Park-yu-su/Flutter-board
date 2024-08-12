@@ -1,9 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'mypage.dart';
 //import 'calendar.dart';
 import 'board.dart';
+import 'package:provider/provider.dart';
+import 'user_status.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -38,12 +39,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController downTabController;
 
   int _selectedDownIndex = 0; //아래 바 페이지 옵션
-
-  final List<TabData> _tabData = <TabData>[
-    TabData('Home', const Board(), Icons.home),
-    TabData('Calendar', const Mypage(), Icons.calendar_month),
-    TabData('MyPage', const Mypage(), Icons.account_circle),
-  ];
+  String username = '';
+  bool loginCheck = false;
 
   @override
   void initState() {
@@ -53,6 +50,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    //유저 정보 전역 관리
+    var userInfo = Provider.of<UserStatus>(context, listen: false);
+
+    //홈 화면에서 유저 정보 갱신을 업데이트
+    setState(() {
+      username = userInfo.username;
+      loginCheck = userInfo.loginCheck;
+    });
+
+    //이동할 페이지
+    final List<TabData> _tabData = <TabData>[
+      TabData('Home', const Board(), Icons.home),
+      TabData('Calendar', const Mypage(), Icons.calendar_month),
+      TabData('MyPage', const Mypage(), Icons.account_circle),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

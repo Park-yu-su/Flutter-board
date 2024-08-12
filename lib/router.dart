@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'home.dart';
 import 'content.dart';
-import 'boardContent.dart';
+import 'board_content.dart';
 import 'write.dart';
 
 final router = GoRouter(

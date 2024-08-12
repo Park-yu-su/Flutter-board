@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'boardContent.dart';
+import 'board_content.dart';
 import 'firestore.dart';
+import 'package:provider/provider.dart';
+import 'user_status.dart';
 
 class Content extends StatefulWidget {
   final BoardContent thisContent;
@@ -27,6 +29,8 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    var userStatus = Provider.of<UserStatus>(context, listen: false);
+
     DateTime now = thisContent.time;
     String dayformat =
         '${now.year}.${now.month}.${now.day} ${now.hour}:${now.minute}:${now.second}';
@@ -99,47 +103,48 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
             ),
 
             //댓글 입력창
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      constraints: BoxConstraints(maxHeight: 100),
-                      child: TextField(
-                        controller: _commentController,
-                        decoration: const InputDecoration(
-                          hintText: '댓글을 작성하세요...',
-                          border: OutlineInputBorder(),
+            if (userStatus.loginCheck)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        constraints: BoxConstraints(maxHeight: 100),
+                        child: TextField(
+                          controller: _commentController,
+                          decoration: const InputDecoration(
+                            hintText: '댓글을 작성하세요...',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.multiline,
+                          maxLines: null,
+                          scrollPhysics: BouncingScrollPhysics(),
+                          onChanged: (value) {
+                            commentInput = value;
+                          },
                         ),
-                        keyboardType: TextInputType.multiline,
-                        maxLines: null,
-                        scrollPhysics: BouncingScrollPhysics(),
-                        onChanged: (value) {
-                          commentInput = value;
-                        },
                       ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: () {
-                      Timestamp commentTime = Timestamp.now();
-                      Map<String, dynamic> tempComment = {
-                        "commentAuthor": "임시",
-                        "commentContent": commentInput,
-                        "commentTimestamp": commentTime,
-                      };
-                      thisContent.comments.add(tempComment);
-                      setState(() {
-                        updateContentToFirestore(thisContent);
-                        _commentController.clear();
-                      });
-                    },
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      onPressed: () {
+                        Timestamp commentTime = Timestamp.now();
+                        Map<String, dynamic> tempComment = {
+                          "commentAuthor": userStatus.username,
+                          "commentContent": commentInput,
+                          "commentTimestamp": commentTime,
+                        };
+                        thisContent.comments.add(tempComment);
+                        setState(() {
+                          updateContentToFirestore(thisContent);
+                          _commentController.clear();
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),

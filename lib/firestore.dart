@@ -1,17 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'boardContent.dart';
+import 'board_content.dart';
 
-void addUserInfoToFirestore(
-    String _username, String _email, String _password) async {
+void addUserInfoToFirestore(String _username, String _email) async {
   await FirebaseFirestore.instance.collection('user').add({
     'username': _username,
     'email': _email,
-    'password': _password,
   });
 }
 
-Future<Map<String, dynamic>?> getUserInfoFromFirestore(
-    String email, String password) async {
+Future<Map<String, dynamic>?> getUserInfoFromFirestore(String email) async {
   Map<String, dynamic>? user;
 
   QuerySnapshot querySnapshot =
@@ -20,7 +17,7 @@ Future<Map<String, dynamic>?> getUserInfoFromFirestore(
   for (QueryDocumentSnapshot doc in querySnapshot.docs) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    if (data['email'] == email && data['password'] == password) {
+    if (data['email'] == email) {
       user = data;
       break;
     }

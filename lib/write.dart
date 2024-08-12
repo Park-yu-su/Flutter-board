@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'boardContent.dart';
+import 'board_content.dart';
 import 'firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:provider/provider.dart';
+import 'user_status.dart';
 
 class Write extends StatefulWidget {
   @override
@@ -20,7 +22,7 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
 
   String title = '';
   String content = '';
-  String author = "임시";
+  String author = "";
   late DateTime time;
   String attribute = '';
   List<Map<String, dynamic>> comments = [];
@@ -35,6 +37,8 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
   }
 
   void makeContent() {
+    var userStatus = Provider.of<UserStatus>(context, listen: false);
+    author = userStatus.username;
     time = DateTime.now();
     writeResult = BoardContent(
         title, content, author, attribute, time, comments, watch, id);

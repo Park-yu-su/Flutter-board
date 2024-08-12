@@ -1,3 +1,5 @@
+//게시판 내용
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'board_content.dart';
@@ -40,112 +42,111 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
       appBar: AppBar(
         title: Text('SSU게더'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            //제목
-            Text(
-              thisContent.title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            //작성자 및 정보
-            const Divider(thickness: 1.5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${thisContent.author}  |  $dayformat  |  조회 수: ${thisContent.watch}',
-                  style: const TextStyle(color: Colors.grey),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              //제목
+              Text(
+                thisContent.title,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              //작성자 및 정보
+              const Divider(thickness: 1.5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${thisContent.author}  |  $dayformat  |  조회 수: ${thisContent.watch}',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+
+              const Divider(thickness: 1.5),
+              const SizedBox(height: 5),
+              //본문
+              const Divider(thickness: 1.5),
+              Container(
+                constraints: const BoxConstraints(
+                  minHeight: 70, // 최소 높이 설정
+                  minWidth: double.infinity, // 최소 너비 설정 (화면의 전체 너비를 차지)
                 ),
-              ],
-            ),
-
-            const Divider(thickness: 1.5),
-            const SizedBox(height: 5),
-            //본문
-            const Divider(thickness: 1.5),
-            Container(
-              constraints: const BoxConstraints(
-                minHeight: 70, // 최소 높이 설정
-                minWidth: double.infinity, // 최소 너비 설정 (화면의 전체 너비를 차지)
+                child: Text(
+                  thisContent.content,
+                  style: const TextStyle(fontSize: 14, height: 1.5),
+                ),
               ),
-              child: Text(
-                thisContent.content,
-                style: const TextStyle(fontSize: 14, height: 1.5),
+              const Divider(thickness: 1.5),
+
+              //댓글 섹션
+              Text(
+                '댓글 ${thisContent.comments.length}',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
-            const Divider(thickness: 1.5),
+              const SizedBox(height: 8),
 
-            //댓글 섹션
-            Text(
-              '댓글 ${thisContent.comments.length}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-
-            //댓글 창
-            Expanded(
-              child: ListView.builder(
-                itemCount: thisContent.comments.length,
-                itemBuilder: (context, index) {
+              //댓글 창
+              Column(
+                children: thisContent.comments.map((comment) {
                   return CommentFormat(
-                      commentAuthor: thisContent.comments[index]
-                          ['commentAuthor'],
-                      commentContent: thisContent.comments[index]
-                          ['commentContent'],
-                      commentTimestamp: thisContent.comments[index]
-                          ['commentTimestamp']);
-                },
+                    commentAuthor: comment['commentAuthor'],
+                    commentContent: comment['commentContent'],
+                    commentTimestamp: comment['commentTimestamp'],
+                  );
+                }).toList(),
               ),
-            ),
 
-            //댓글 입력창
-            if (userStatus.loginCheck)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        constraints: BoxConstraints(maxHeight: 100),
-                        child: TextField(
-                          controller: _commentController,
-                          decoration: const InputDecoration(
-                            hintText: '댓글을 작성하세요...',
-                            border: OutlineInputBorder(),
+              //댓글 입력창
+              if (userStatus.loginCheck)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          constraints: BoxConstraints(maxHeight: 100),
+                          child: TextField(
+                            controller: _commentController,
+                            decoration: const InputDecoration(
+                              hintText: '댓글을 작성하세요...',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.multiline,
+                            maxLines: null,
+                            scrollPhysics: BouncingScrollPhysics(),
+                            onChanged: (value) {
+                              commentInput = value;
+                            },
                           ),
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          scrollPhysics: BouncingScrollPhysics(),
-                          onChanged: (value) {
-                            commentInput = value;
-                          },
                         ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.send),
-                      onPressed: () {
-                        Timestamp commentTime = Timestamp.now();
-                        Map<String, dynamic> tempComment = {
-                          "commentAuthor": userStatus.username,
-                          "commentContent": commentInput,
-                          "commentTimestamp": commentTime,
-                        };
-                        thisContent.comments.add(tempComment);
-                        setState(() {
-                          updateContentToFirestore(thisContent);
-                          _commentController.clear();
-                        });
-                      },
-                    ),
-                  ],
+                      IconButton(
+                        icon: const Icon(Icons.send),
+                        onPressed: () {
+                          Timestamp commentTime = Timestamp.now();
+                          Map<String, dynamic> tempComment = {
+                            "commentAuthor": userStatus.username,
+                            "commentContent": commentInput,
+                            "commentTimestamp": commentTime,
+                          };
+                          thisContent.comments.add(tempComment);
+                          setState(() {
+                            updateContentToFirestore(thisContent);
+                            _commentController.clear();
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

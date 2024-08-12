@@ -1,10 +1,11 @@
+//로그인 및 유저 정보 화면
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'toast_dialog.dart';
 import 'firestore.dart';
-import 'package:provider/provider.dart';
 import 'user_status.dart';
 
 class Mypage extends StatelessWidget {
@@ -38,8 +39,7 @@ class _MypageScreenState extends State<MypageScreen> {
   String password = '';
   String username = '';
 
-  String userImageUrl = '';
-  late FToast fToast;
+  String? userImageIcon = '';
 
   @override
   void initState() {
@@ -48,8 +48,6 @@ class _MypageScreenState extends State<MypageScreen> {
     password = '';
     username = '';
     loginCheck = false;
-    fToast = FToast();
-    fToast.init(context);
   }
 
   @override
@@ -57,6 +55,7 @@ class _MypageScreenState extends State<MypageScreen> {
     var userStatus = Provider.of<UserStatus>(context);
     loginCheck = userStatus.loginCheck;
     username = userStatus.username;
+    userImageIcon = userStatus.imageIcon;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -69,19 +68,30 @@ class _MypageScreenState extends State<MypageScreen> {
               loginCheck
                   ? Column(
                       children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundImage: null,
-                          child: Icon(
-                            Icons.person_4_outlined,
-                            size: 50,
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              getimageIcon();
+                            });
+                          },
+                          child: CircleAvatar(
+                            radius: 70,
+                            backgroundImage: userImageIcon != ""
+                                ? NetworkImage(userImageIcon!)
+                                : null,
+                            child: userImageIcon == ""
+                                ? const Icon(
+                                    Icons.person_4_outlined,
+                                    size: 70,
+                                  )
+                                : null,
                           ),
                         ),
                         const SizedBox(height: 20),
                         Text(
                           username,
                           style: const TextStyle(
-                              fontSize: 25,
+                              fontSize: 30,
                               color: Colors.black,
                               fontFamily: "MaplestoryBold"),
                         ),
@@ -107,18 +117,18 @@ class _MypageScreenState extends State<MypageScreen> {
                   : Column(
                       children: [
                         const CircleAvatar(
-                          radius: 50,
+                          radius: 70,
                           backgroundImage: null,
                           child: Icon(
                             Icons.person_4_outlined,
-                            size: 50,
+                            size: 70,
                           ),
                         ),
                         const SizedBox(height: 20),
                         const Text(
                           '로그인이 필요합니다',
                           style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 30,
                               color: Colors.black,
                               fontFamily: "MaplestoryBold"),
                         ),
@@ -146,6 +156,21 @@ class _MypageScreenState extends State<MypageScreen> {
         ),
       ),
     );
+  }
+
+  void getimageIcon() async {
+    //임시 변수에 이미지 업로드 결과를 가져오기
+    String checkUrl = await pickAndUploadImage(email);
+
+    setState(() {
+      //만약 정상적으로 return이 된 경우에만 정보를 업데이트
+      if (checkUrl != "") {
+        userImageIcon = checkUrl;
+
+        var userStatus = Provider.of<UserStatus>(context, listen: false);
+        userStatus.updateImageIcon(userImageIcon!);
+      }
+    });
   }
 
   void register() async {
@@ -180,11 +205,16 @@ class _MypageScreenState extends State<MypageScreen> {
       //로그인 성공 시 해당 유저의 정보를 firestore에서 가져오기
       Map<String, dynamic>? _user = await getUserInfoFromFirestore(email);
       username = _user!['username'];
+      userImageIcon = _user['userIconImage'];
+      userImageIcon ??= "";
+
       setState(() {
         loginCheck = true;
         var userStatus = Provider.of<UserStatus>(context, listen: false);
         userStatus.updateUsername(username);
         userStatus.updateLoginStatus(loginCheck);
+        userStatus.updateEmail(email);
+        userStatus.updateImageIcon(userImageIcon!);
       });
       context.pop();
     } catch (e) {
@@ -198,9 +228,12 @@ class _MypageScreenState extends State<MypageScreen> {
       username = '';
       email = '';
       password = '';
+      userImageIcon = '';
       var userStatus = Provider.of<UserStatus>(context, listen: false);
-      userStatus.updateUsername(username);
-      userStatus.updateLoginStatus(loginCheck);
+      userStatus.updateUsername("");
+      userStatus.updateLoginStatus(false);
+      userStatus.updateEmail("");
+      userStatus.updateImageIcon("");
     });
   }
 
@@ -374,7 +407,8 @@ class _MypageScreenState extends State<MypageScreen> {
                               ),
                               fixedSize: const Size(20, 20),
                               padding: EdgeInsets.zero,
-                              backgroundColor: Colors.grey[200],
+                              backgroundColor:
+                                  const Color.fromRGBO(233, 236, 239, 50),
                             ),
                             child: const Icon(
                               Icons.arrow_back,
@@ -446,7 +480,7 @@ class _MypageScreenState extends State<MypageScreen> {
                             fontFamily: "MaplestoryLight"),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
                     Center(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,

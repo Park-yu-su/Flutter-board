@@ -1,9 +1,12 @@
-import 'dart:io';
+//메인 화면
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:io';
 import 'mypage.dart';
 //import 'calendar.dart';
 import 'board.dart';
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'user_status.dart';
 
 class Home extends StatelessWidget {
@@ -73,7 +76,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           'SSU게더',
           style: TextStyle(fontFamily: "MaplestoryBold"),
         ),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.home))],
+        actions: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  context.go('/');
+                });
+              },
+              icon: const Icon(Icons.home))
+        ],
       ),
       body: PopScope(
         //뒤로 가기 버튼 누를 시 제어

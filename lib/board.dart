@@ -1,3 +1,5 @@
+//게시판 매인 화면
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -117,12 +119,12 @@ class _BoardScreenState extends State<BoardScreen>
   }
 
   Widget buildBoardList(int mode) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-        future: getBoardFromFirestore(mode),
+    return StreamBuilder<List<Map<String, dynamic>>>(
+        stream: getBoardFromFirestore(mode),
         builder: (context, snapshot) {
           //로딩중(정보 가져오기)
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           //Error 발생
           else if (snapshot.hasError) {
@@ -135,7 +137,7 @@ class _BoardScreenState extends State<BoardScreen>
           else {
             //boardData에는 게시판 글 정보가 다 담김
             List<Map<String, dynamic>> boardData = snapshot.data!;
-            final int textPerPage = 10;
+            const int textPerPage = 10;
             final int pages = (boardData.length / textPerPage).ceil();
 
             //pageBoardData는 한 페이지에 해당하는 게시판 글 정보가 담김
@@ -214,6 +216,13 @@ class _BoardScreenState extends State<BoardScreen>
                         } else {
                           //중요! index가 아닌 realIndex 사용!
                           final realIndex = index - 1;
+                          int commentCount =
+                              pageBoardData[realIndex]['comments']
+                                  .map((item) {
+                                    return Map<String, dynamic>.from(item);
+                                  })
+                                  .toList()
+                                  .length; //댓글 개수 표시 용도 변수
                           Timestamp timestamp =
                               pageBoardData[realIndex]['time'] as Timestamp;
                           DateTime datetime = timestamp.toDate();
@@ -263,10 +272,19 @@ class _BoardScreenState extends State<BoardScreen>
                                     flex: 40,
                                     child: Padding(
                                       padding: const EdgeInsets.only(left: 5),
-                                      child: Text(
-                                        pageBoardData[realIndex]['title'] ?? '',
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
+                                      child: commentCount > 0
+                                          ? Text(
+                                              '${pageBoardData[realIndex]['title']}  [$commentCount]',
+                                              style:
+                                                  const TextStyle(fontSize: 14),
+                                            )
+                                          : Text(
+                                              pageBoardData[realIndex]
+                                                      ['title'] ??
+                                                  '',
+                                              style:
+                                                  const TextStyle(fontSize: 14),
+                                            ),
                                     ),
                                   ),
                                   Expanded(
@@ -304,6 +322,8 @@ class _BoardScreenState extends State<BoardScreen>
                         }
                       }),
                 ),
+
+                //게시글이 늘어날 때 버튼 개수가 너무 많아진다...
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Row(

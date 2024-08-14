@@ -6,6 +6,7 @@ import 'board_content.dart';
 import 'firestore.dart';
 import 'package:provider/provider.dart';
 import 'user_status.dart';
+import 'package:go_router/go_router.dart';
 
 class Content extends StatefulWidget {
   final BoardContent thisContent;
@@ -29,6 +30,34 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
     updateContentToFirestore(thisContent);
   }
 
+  void showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('게시글 삭제'),
+          content: const Text('정말 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                deleteContentToFirestore(thisContent.id, thisContent.author);
+                Navigator.of(context).pop();
+                context.go('/');
+              },
+              child: const Text('삭제'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('취소'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var userStatus = Provider.of<UserStatus>(context, listen: false);
@@ -40,7 +69,19 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('SSU게더'),
+        title: const Text(
+          'SSU게더',
+          style: TextStyle(fontFamily: "MaplestoryBold"),
+        ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  context.go('/');
+                });
+              },
+              icon: const Icon(Icons.home))
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -55,6 +96,45 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
+              //수정 & 삭제 버튼
+              if (userStatus.username == thisContent.author)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      onTap: () {},
+                      child: const Row(
+                        children: [
+                          Icon(Icons.create, size: 12, color: Colors.black),
+                          Text(
+                            '수정',
+                            style: TextStyle(
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Text(' | '),
+                    InkWell(
+                      onTap: () {
+                        showDeleteDialog(context);
+                      },
+                      child: const Row(
+                        children: [
+                          Icon(Icons.delete, size: 12, color: Colors.black),
+                          Text(
+                            '삭제',
+                            style: TextStyle(
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
               //작성자 및 정보
               const Divider(thickness: 1.5),
               Row(

@@ -52,6 +52,7 @@ Future<String> pickAndUploadImage(String email) async {
   return "";
 }
 
+//유저 정보를 firestore에 추가
 void addUserInfoToFirestore(String _username, String _email) async {
   await FirebaseFirestore.instance.collection('user').add({
     'username': _username,
@@ -59,6 +60,7 @@ void addUserInfoToFirestore(String _username, String _email) async {
   });
 }
 
+//firestore에 있는 정보들 중 email에 해당하는 유저 정보를 가져옴
 Future<Map<String, dynamic>?> getUserInfoFromFirestore(String email) async {
   Map<String, dynamic>? user;
 
@@ -77,6 +79,65 @@ Future<Map<String, dynamic>?> getUserInfoFromFirestore(String email) async {
   return user;
 }
 
+//게시판 data를 firestore에서 받아온다
+//FutureBuilder -> StreamBuilder로 변경
+//게시글 삭제&수정 시 이를 지속적으로 실시간 반영해주어야 하기 떄문에
+//한 번의 비동기 작업을 수행하는 FutureBuilder 대신에
+//실시간으로 데이터를 지속적으로 업데이트하는 StreamBuilder를 사용
+Stream<List<Map<String, dynamic>>> getBoardFromFirestore(int mode) {
+  Stream<List<Map<String, dynamic>>> boardList;
+
+  Stream<QuerySnapshot> querySnapshotStream;
+
+  switch (mode) {
+    case 1:
+      querySnapshotStream = FirebaseFirestore.instance
+          .collection('board')
+          .orderBy('time', descending: true)
+          .snapshots();
+      break;
+
+    case 2:
+      querySnapshotStream = FirebaseFirestore.instance
+          .collection('board')
+          .orderBy('time', descending: true)
+          .where('attribute', isEqualTo: "공지")
+          .snapshots();
+      break;
+
+    case 3:
+      querySnapshotStream = FirebaseFirestore.instance
+          .collection('board')
+          .orderBy('time', descending: true)
+          .where('attribute', isEqualTo: "정보")
+          .snapshots();
+      break;
+
+    case 4:
+      querySnapshotStream = FirebaseFirestore.instance
+          .collection('board')
+          .orderBy('time', descending: true)
+          .where('attribute', isEqualTo: "잡담")
+          .snapshots();
+      break;
+
+    default:
+      querySnapshotStream = FirebaseFirestore.instance
+          .collection('board')
+          .orderBy('time', descending: true)
+          .snapshots();
+  }
+
+  boardList = querySnapshotStream.map((querySnapshot) {
+    return querySnapshot.docs.map((doc) {
+      return doc.data() as Map<String, dynamic>;
+    }).toList();
+  });
+
+  return boardList;
+}
+
+/*
 Future<List<Map<String, dynamic>>> getBoardFromFirestore(int mode) async {
   List<Map<String, dynamic>> boardList;
   try {
@@ -131,7 +192,9 @@ Future<List<Map<String, dynamic>>> getBoardFromFirestore(int mode) async {
 
   return boardList;
 }
+*/
 
+//게시글을 firestore에 업로드한다
 void addContentToFirestore(BoardContent content) async {
   await FirebaseFirestore.instance.collection('board').add({
     'attribute': content.attribute,
@@ -147,6 +210,7 @@ void addContentToFirestore(BoardContent content) async {
   print('add OK ${content.time}\n ${content.id}');
 }
 
+//firestore에 있는 게시글을 업데이트한다.
 void updateContentToFirestore(BoardContent content) async {
   //class에 존재하는 필드값을 토대로 해당 문서를 찾고 이를 업데이트
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -168,6 +232,24 @@ void updateContentToFirestore(BoardContent content) async {
         'comments': content.comments,
         'id': content.id,
       });
+    }
+  } else {
+    print('No documents in database');
+  }
+}
+
+//firestore에 있는 게시글을 삭제한다.
+void deleteContentToFirestore(String id, String username) async {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  QuerySnapshot querySnapshot = await firestore
+      .collection('board')
+      .where('id', isEqualTo: id)
+      .where('author', isEqualTo: username)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    for (var doc in querySnapshot.docs) {
+      await doc.reference.delete();
     }
   } else {
     print('No documents in database');

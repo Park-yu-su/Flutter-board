@@ -41,6 +41,8 @@ class _MypageScreenState extends State<MypageScreen> {
 
   String? userImageIcon = '';
 
+  bool loadingCheck = false; //비동기 작업 수행 시 loading
+
   @override
   void initState() {
     super.initState();
@@ -60,109 +62,120 @@ class _MypageScreenState extends State<MypageScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 100),
-          child: Column(
-            children: [
-              //로그인 체크
-              loginCheck
-                  ? Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              getimageIcon();
-                            });
-                          },
-                          child: CircleAvatar(
-                            radius: 70,
-                            backgroundImage: userImageIcon != ""
-                                ? NetworkImage(userImageIcon!)
-                                : null,
-                            child: userImageIcon == ""
-                                ? const Icon(
-                                    Icons.person_4_outlined,
-                                    size: 70,
-                                  )
-                                : null,
+        child: loadingCheck
+            ? const CircularProgressIndicator() //로딩중일 때
+            : Padding(
+                padding: const EdgeInsets.only(top: 100),
+                child: Column(
+                  children: [
+                    //로그인 체크
+                    loginCheck
+                        ? Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    getimageIcon();
+                                  });
+                                },
+                                child: CircleAvatar(
+                                  radius: 70,
+                                  backgroundImage: userImageIcon != ""
+                                      ? NetworkImage(userImageIcon!)
+                                      : null,
+                                  child: userImageIcon == ""
+                                      ? const Icon(
+                                          Icons.person_4_outlined,
+                                          size: 70,
+                                        )
+                                      : null,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                username,
+                                style: const TextStyle(
+                                    fontSize: 30,
+                                    color: Colors.black,
+                                    fontFamily: "MaplestoryBold"),
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  logout();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  fixedSize: Size(
+                                      MediaQuery.of(context).size.width * 0.5,
+                                      25),
+                                ),
+                                child: const Text(
+                                  '로그아웃',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                      fontFamily: "MaplestoryLight"),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            children: [
+                              const CircleAvatar(
+                                radius: 70,
+                                backgroundImage: null,
+                                child: Icon(
+                                  Icons.person_4_outlined,
+                                  size: 70,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                '로그인이 필요합니다',
+                                style: TextStyle(
+                                    fontSize: 30,
+                                    color: Colors.black,
+                                    fontFamily: "MaplestoryBold"),
+                              ),
+                              SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  showLoginDialog();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  fixedSize: Size(
+                                      MediaQuery.of(context).size.width * 0.5,
+                                      25),
+                                ),
+                                child: const Text(
+                                  '로그인 / 회원가입',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                      fontFamily: "MaplestoryLight"),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          username,
-                          style: const TextStyle(
-                              fontSize: 30,
-                              color: Colors.black,
-                              fontFamily: "MaplestoryBold"),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            logout();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            fixedSize: Size(
-                                MediaQuery.of(context).size.width * 0.5, 25),
-                          ),
-                          child: const Text(
-                            '로그아웃',
-                            style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.black,
-                                fontFamily: "MaplestoryLight"),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      children: [
-                        const CircleAvatar(
-                          radius: 70,
-                          backgroundImage: null,
-                          child: Icon(
-                            Icons.person_4_outlined,
-                            size: 70,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          '로그인이 필요합니다',
-                          style: TextStyle(
-                              fontSize: 30,
-                              color: Colors.black,
-                              fontFamily: "MaplestoryBold"),
-                        ),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            showLoginDialog();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            fixedSize: Size(
-                                MediaQuery.of(context).size.width * 0.5, 25),
-                          ),
-                          child: const Text(
-                            '로그인 / 회원가입',
-                            style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.black,
-                                fontFamily: "MaplestoryLight"),
-                          ),
-                        ),
-                      ],
-                    ),
-            ],
-          ),
-        ),
+                  ],
+                ),
+              ),
       ),
     );
   }
 
   void getimageIcon() async {
     //임시 변수에 이미지 업로드 결과를 가져오기
+
+    setState(() {
+      loadingCheck = true;
+    });
+
     String checkUrl = await pickAndUploadImage(email);
 
     setState(() {
+      loadingCheck = false;
+
       //만약 정상적으로 return이 된 경우에만 정보를 업데이트
       if (checkUrl != "") {
         userImageIcon = checkUrl;
@@ -174,6 +187,10 @@ class _MypageScreenState extends State<MypageScreen> {
   }
 
   void register() async {
+    setState(() {
+      loadingCheck = true;
+    });
+
     try {
       await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -185,16 +202,25 @@ class _MypageScreenState extends State<MypageScreen> {
 
       setState(() {
         //초기화
+        loadingCheck = false;
         username = '';
         email = '';
         password = '';
       });
     } catch (e) {
+      setState(() {
+        loadingCheck = false;
+      });
+
       showErrorDialog(context, '회원가입 실패', e);
     }
   }
 
   void login() async {
+    setState(() {
+      loadingCheck = true;
+    });
+
     try {
       // UserCredential userCredential = await _auth.signInWithEmailAndPassword(
       await _auth.signInWithEmailAndPassword(
@@ -209,6 +235,7 @@ class _MypageScreenState extends State<MypageScreen> {
       userImageIcon ??= "";
 
       setState(() {
+        loadingCheck = false;
         loginCheck = true;
         var userStatus = Provider.of<UserStatus>(context, listen: false);
         userStatus.updateUsername(username);
@@ -218,6 +245,10 @@ class _MypageScreenState extends State<MypageScreen> {
       });
       context.pop();
     } catch (e) {
+      setState(() {
+        loadingCheck = false;
+      });
+
       showErrorDialog(context, '로그인 실패', e);
     }
   }

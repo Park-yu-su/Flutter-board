@@ -30,6 +30,37 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
     updateContentToFirestore(thisContent);
   }
 
+  void navigateWriteModify(BuildContext context) async {
+    await context.push(
+      '/write',
+      extra: thisContent,
+    );
+
+    Map<String, dynamic>? getContent =
+        await getBoardContentFromFirestore(thisContent);
+
+    setState(() {
+      Timestamp tempTime = getContent!['time'] as Timestamp;
+      List<dynamic> dynamicList = getContent['comments'];
+      List<Map<String, dynamic>> comments = dynamicList.map((item) {
+        return Map<String, dynamic>.from(item);
+      }).toList();
+
+      BoardContent newContent = BoardContent(
+        getContent['title'],
+        getContent['content'],
+        getContent['author'],
+        getContent['attribute'],
+        tempTime.toDate(),
+        comments,
+        getContent['watch'],
+        getContent['id'],
+      );
+
+      thisContent = newContent;
+    });
+  }
+
   void showDeleteDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -102,7 +133,9 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        navigateWriteModify(context);
+                      },
                       child: const Row(
                         children: [
                           Icon(Icons.create, size: 12, color: Colors.black),

@@ -71,7 +71,7 @@ class _BoardScreenState extends State<BoardScreen>
                   child: IconButton(
                     onPressed: () {
                       setState(() {
-                        DateTime now = DateTime.now();
+                        DateTime.now();
                       });
                     },
                     icon: Icon(Icons.search),
@@ -109,15 +109,16 @@ class _BoardScreenState extends State<BoardScreen>
   }
 
   void navigateContent(BuildContext context, BoardContent thisContent) async {
-    final result = await context.push('/content', extra: thisContent);
+    await context.push('/content', extra: thisContent);
     setState(() {});
   }
 
   void navigateWrite(BuildContext context) async {
-    final result = await context.push('/write');
+    await context.push('/write');
     setState(() {});
   }
 
+  //FutureBuilder 대신 StreamBuilder를 이용해 지속적으로 데이터를 받아오기
   Widget buildBoardList(int mode) {
     return StreamBuilder<List<Map<String, dynamic>>>(
         stream: getBoardFromFirestore(mode),

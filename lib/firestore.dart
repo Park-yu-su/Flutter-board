@@ -217,7 +217,7 @@ void updateContentToFirestore(BoardContent content) async {
   QuerySnapshot querySnapshot = await firestore
       .collection('board')
       .where('id', isEqualTo: content.id)
-      .where('title', isEqualTo: content.title)
+      .where('author', isEqualTo: content.author)
       .get();
 
   if (querySnapshot.docs.isNotEmpty) {
@@ -253,5 +253,23 @@ void deleteContentToFirestore(String id, String username) async {
     }
   } else {
     print('No documents in database');
+  }
+}
+
+//firestore에 저장된 게시판 1개의 내용을 가져옴(수정된 내용)
+Future<Map<String, dynamic>?> getBoardContentFromFirestore(
+    BoardContent thisContent) async {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  QuerySnapshot querySnapshot = await firestore
+      .collection('board')
+      .where('id', isEqualTo: thisContent.id)
+      .where('author', isEqualTo: thisContent.author)
+      .limit(1)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    return querySnapshot.docs.first.data() as Map<String, dynamic>;
+  } else {
+    return null;
   }
 }

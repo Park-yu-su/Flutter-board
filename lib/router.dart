@@ -21,7 +21,12 @@ final router = GoRouter(
     GoRoute(
         path: '/write',
         builder: (context, state) {
-          return Write();
+          if (state.extra == null) {
+            return Write();
+          } else {
+            final BoardContent thisContent = state.extra as BoardContent;
+            return Write(thisContent: thisContent);
+          }
         }),
   ],
 );

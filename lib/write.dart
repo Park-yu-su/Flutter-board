@@ -1,3 +1,5 @@
+//게시글 작성
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'board_content.dart';
@@ -7,18 +9,25 @@ import 'package:provider/provider.dart';
 import 'user_status.dart';
 
 class Write extends StatefulWidget {
+  final BoardContent? thisContent;
+
+  Write({super.key, this.thisContent});
+
   @override
   _WriteScreenState createState() => _WriteScreenState();
 }
 
 class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
-  final TextEditingController _titleController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _contextController;
 
   String selectedCategory = "공지"; //글쓰기 tab
   var uuid = Uuid(); //각 게시글의 ID
 
   //작성한 내용이 담길 객체
   late BoardContent writeResult;
+  //작성이 아닌 수정일 경우, 기존 내용이 담긴 객체
+  late BoardContent thisContent;
 
   String title = '';
   String content = '';
@@ -29,20 +38,49 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
   int watch = 0;
   String id = '';
 
+  //수정, 작성 비교
+  bool modifyCheck = false;
+
   @override
   void initState() {
     id = uuid.v4();
     attribute = selectedCategory;
     super.initState();
+
+    //수정하는지 새로 쓰는지 확인
+    if (widget.thisContent != null) {
+      modifyCheck = true;
+      thisContent = widget.thisContent!;
+      selectedCategory = thisContent.attribute; //속성
+      title = thisContent.title;
+      content = thisContent.content;
+      _titleController = TextEditingController(text: thisContent.title);
+      _contextController = TextEditingController(text: thisContent.content);
+    } else {
+      modifyCheck = false;
+      _titleController = TextEditingController();
+      _contextController = TextEditingController();
+    }
   }
 
   void makeContent() {
-    var userStatus = Provider.of<UserStatus>(context, listen: false);
-    author = userStatus.username;
     time = DateTime.now();
-    writeResult = BoardContent(
-        title, content, author, attribute, time, comments, watch, id);
-    addContentToFirestore(writeResult);
+
+    //새로 글을 작성하는 경우
+    if (modifyCheck == false) {
+      var userStatus = Provider.of<UserStatus>(context, listen: false);
+      author = userStatus.username;
+
+      writeResult = BoardContent(
+          title, content, author, attribute, time, comments, watch, id);
+      addContentToFirestore(writeResult);
+    }
+    //기존 글을 수정하는 경우
+    else {
+      writeResult = BoardContent(title, content, thisContent.author, attribute,
+          time, thisContent.comments, thisContent.watch, thisContent.id);
+      updateContentToFirestore(writeResult);
+    }
   }
 
   @override
@@ -50,13 +88,24 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('SSU게더'),
+        title: const Text(
+          'SSU게더',
+          style: TextStyle(fontFamily: "MaplestoryBold"),
+        ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                context.go('/');
+              },
+              icon: const Icon(Icons.home))
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(15.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 10),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 5.0),
               width: double.infinity,
@@ -132,6 +181,7 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
               child: Padding(
                 padding: EdgeInsets.all(10),
                 child: TextFormField(
+                  controller: _contextController,
                   onChanged: (value) {
                     content = value;
                   },
@@ -145,14 +195,17 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            SizedBox(height: 30.0),
+            SizedBox(height: 50.0),
             Center(
               child: ElevatedButton(
                 onPressed: () {
                   makeContent();
                   context.pop();
                 },
-                child: Text('등록'),
+                style: ElevatedButton.styleFrom(
+                  fixedSize: Size(MediaQuery.of(context).size.width * 0.4, 50),
+                ),
+                child: modifyCheck ? const Text('수정') : const Text('등록'),
               ),
             ),
           ],

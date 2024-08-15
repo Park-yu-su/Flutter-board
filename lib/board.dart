@@ -32,12 +32,24 @@ class BoardScreen extends StatefulWidget {
 class _BoardScreenState extends State<BoardScreen>
     with TickerProviderStateMixin {
   late TabController tabController;
+
   int currentPage = 0; //현재 페이지에 해당하는 리스트를 출력력
+  int maxButtonsToShow = 4; //최대 목차 버튼 수
+  int textPerPage = 10; //한 페이지에 보여주는 게시글 수
+  int pages = 0; //총 페이지 수
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 4, vsync: this);
+    tabController = TabController(length: 4, vsync: this)
+      ..addListener(handleTabChange);
+  }
+
+  void handleTabChange() {
+    if (tabController.indexIsChanging) {
+      //setState로 화면 갱신 필요X tab이 바뀌며 알아서 setState
+      currentPage = 0;
+    }
   }
 
   @override
@@ -138,8 +150,8 @@ class _BoardScreenState extends State<BoardScreen>
           else {
             //boardData에는 게시판 글 정보가 다 담김
             List<Map<String, dynamic>> boardData = snapshot.data!;
-            const int textPerPage = 10;
-            final int pages = (boardData.length / textPerPage).ceil();
+            textPerPage = 10;
+            pages = (boardData.length / textPerPage).ceil();
 
             //pageBoardData는 한 페이지에 해당하는 게시판 글 정보가 담김
             List<Map<String, dynamic>> pageBoardData = boardData
@@ -324,37 +336,99 @@ class _BoardScreenState extends State<BoardScreen>
                       }),
                 ),
 
-                //게시글이 늘어날 때 버튼 개수가 너무 많아진다...
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(pages, (index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              currentPage = index;
-                            });
-                          },
-                          child: Text(
-                            '${index + 1}',
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: currentPage == index
-                                ? Colors.blue
-                                : Colors.grey,
-                          ),
-                        ),
-                      );
-                    }),
+                    children: buildPageButton(),
                   ),
                 ),
               ],
             );
           }
         });
+  }
+
+  //페이지 버튼 widget들이 담긴 배열을 리턴하는 함수
+  List<Widget> buildPageButton() {
+    List<Widget> buttons = [];
+
+    //총 페이지 수 <= 출력할 버튼 수
+    if (pages <= maxButtonsToShow) {
+      for (int i = 0; i < pages; i++) {
+        buttons.add(buildPageButtonWidget(i));
+      }
+    }
+
+    //총 페이지 수 >= 출력할 버튼 수
+    else {
+      int showStart = (currentPage - maxButtonsToShow ~/ 2)
+          .clamp(0, pages - maxButtonsToShow);
+      int showEnd = (showStart + maxButtonsToShow).clamp(0, pages);
+
+      if (showStart > 0) {
+        //첫 페이지는 항상
+        buttons.add(buildPageButtonWidget(0));
+        if (showStart > 1) {
+          buttons.add(const Text('...'));
+        }
+      }
+
+      //0부터 count되므로 -1 고려
+      for (int i = showStart; i < showEnd; i++) {
+        buttons.add(buildPageButtonWidget(i));
+      }
+
+      if (showEnd < pages) {
+        if (showEnd < pages - 1) {
+          buttons.add(const Text('...'));
+        }
+        buttons.add(buildPageButtonWidget(pages - 1));
+      }
+    }
+
+    return buttons;
+  }
+
+//기존의 버튼을 리스트 단위로 만드는 것이 아닌 1개의 버튼을 만든다
+  Widget buildPageButtonWidget(int index) {
+    return Stack(
+      children: [
+        TextButton(
+          onPressed: () {
+            setState(() {
+              currentPage = index;
+            });
+          },
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            minimumSize: const Size(20, 30),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: Text(
+            '${index + 1}',
+            style: TextStyle(
+              color: currentPage == index ? Colors.blue : Colors.black,
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: 30,
+              height: 1,
+              color: currentPage == index ? Colors.blue : Colors.transparent,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override

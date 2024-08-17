@@ -1,5 +1,6 @@
 //게시판 내용
 
+import 'package:board_project/toast_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'board_content.dart';
@@ -7,6 +8,8 @@ import 'firestore.dart';
 import 'package:provider/provider.dart';
 import 'user_status.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Content extends StatefulWidget {
   final BoardContent thisContent;
@@ -28,65 +31,6 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
     thisContent = widget.thisContent;
     thisContent.watch += 1;
     updateContentToFirestore(thisContent);
-  }
-
-  void navigateWriteModify(BuildContext context) async {
-    await context.push(
-      '/write',
-      extra: thisContent,
-    );
-
-    Map<String, dynamic>? getContent =
-        await getBoardContentFromFirestore(thisContent);
-
-    setState(() {
-      Timestamp tempTime = getContent!['time'] as Timestamp;
-      List<dynamic> dynamicList = getContent['comments'];
-      List<Map<String, dynamic>> comments = dynamicList.map((item) {
-        return Map<String, dynamic>.from(item);
-      }).toList();
-
-      BoardContent newContent = BoardContent(
-        getContent['title'],
-        getContent['content'],
-        getContent['author'],
-        getContent['attribute'],
-        tempTime.toDate(),
-        comments,
-        getContent['watch'],
-        getContent['id'],
-      );
-
-      thisContent = newContent;
-    });
-  }
-
-  void showDeleteDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('게시글 삭제'),
-          content: const Text('정말 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                deleteContentToFirestore(thisContent.id, thisContent.author);
-                Navigator.of(context).pop();
-                context.go('/');
-              },
-              child: const Text('삭제'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('취소'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -189,9 +133,18 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
                   minHeight: 70, // 최소 높이 설정
                   minWidth: double.infinity, // 최소 너비 설정 (화면의 전체 너비를 차지)
                 ),
-                child: Text(
-                  thisContent.content,
-                  style: const TextStyle(fontSize: 14, height: 1.5),
+                child: Linkify(
+                  onOpen: (link) async {
+                    Uri url = Uri.parse(link.url);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                    } else {
+                      showErrorDialog(
+                          context, "URL 오픈 실패", "해당 URL를 열 수 없습니다.");
+                    }
+                  },
+                  text: thisContent.content,
+                  linkStyle: const TextStyle(fontSize: 14, height: 1.5),
                 ),
               ),
               const Divider(thickness: 1.5),
@@ -218,7 +171,8 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
               //댓글 입력창
               if (userStatus.loginCheck)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 5.0),
                   child: Row(
                     children: [
                       Expanded(
@@ -265,6 +219,65 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
     );
   }
 
+  void navigateWriteModify(BuildContext context) async {
+    await context.push(
+      '/write',
+      extra: thisContent,
+    );
+
+    Map<String, dynamic>? getContent =
+        await getBoardContentFromFirestore(thisContent);
+
+    setState(() {
+      Timestamp tempTime = getContent!['time'] as Timestamp;
+      List<dynamic> dynamicList = getContent['comments'];
+      List<Map<String, dynamic>> comments = dynamicList.map((item) {
+        return Map<String, dynamic>.from(item);
+      }).toList();
+
+      BoardContent newContent = BoardContent(
+        getContent['title'],
+        getContent['content'],
+        getContent['author'],
+        getContent['attribute'],
+        tempTime.toDate(),
+        comments,
+        getContent['watch'],
+        getContent['id'],
+      );
+
+      thisContent = newContent;
+    });
+  }
+
+  void showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('게시글 삭제'),
+          content: const Text('정말 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                deleteContentToFirestore(thisContent.id, thisContent.author);
+                Navigator.of(context).pop();
+                context.go('/');
+              },
+              child: const Text('삭제'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('취소'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -306,7 +319,17 @@ class CommentFormat extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(commentContent),
+        Linkify(
+          onOpen: (link) async {
+            Uri url = Uri.parse(link.url);
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url);
+            } else {
+              showErrorDialog(context, "URL 오픈 실패", "해당 URL를 열 수 없습니다.");
+            }
+          },
+          text: commentContent,
+        ),
         const Divider(thickness: 1),
       ],
     );

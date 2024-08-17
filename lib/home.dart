@@ -1,10 +1,9 @@
 //메인 화면
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'mypage.dart';
-//import 'calendar.dart';
+import 'calendar.dart';
 import 'board.dart';
 import 'package:go_router/go_router.dart';
 import 'user_status.dart';
@@ -48,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    downTabController = TabController(length: 3, vsync: this);
+    downTabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -65,7 +64,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     //이동할 페이지
     final List<TabData> _tabData = <TabData>[
       TabData('Home', const Board(), Icons.home),
-      TabData('Calendar', const Mypage(), Icons.calendar_month),
+      TabData('Livetalk', const Mypage(), Icons.chat),
+      TabData('Calendar', const Calendar(), Icons.calendar_month),
       TabData('MyPage', const Mypage(), Icons.account_circle),
     ];
 

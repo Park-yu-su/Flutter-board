@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'router.dart';
 import 'user_status.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

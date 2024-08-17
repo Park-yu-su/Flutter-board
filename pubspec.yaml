@@ -30,18 +30,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audioplayers: ^6.0.0
-  dio: ^5.5.0+1
-  provider: ^6.1.2
-  firebase_core: ^2.32.0
+  audioplayers: ^6.0.0 #asset Audio 실행
+  dio: ^5.5.0+1 #네트워크 요청 HTTP 클라이언트 패키지
+  provider: ^6.1.2 #상태 관리
+  firebase_core: ^2.32.0 
   firebase_auth: ^4.20.0
   firebase_storage: ^11.0.0
-  go_router: ^14.2.1
-  fluttertoast: ^8.2.6
   cloud_firestore: ^4.17.5
-  intl: ^0.18.0
-  uuid: ^3.0.6
-  image_picker: ^0.8.4+3
+  go_router: ^14.2.1 #라우팅
+  fluttertoast: ^8.2.6 #toast message
+  intl: ^0.18.0 #날짜/숫자 제공 패키지
+  uuid: ^3.0.6 #고유 ID 사용(게시글 ID)
+  image_picker: ^0.8.4+3 #이미지 가져오기
+  flutter_linkify: ^6.0.0 #게시글에서 URL 자동 인식
+  url_launcher: ^6.0.20 #내부 앱에서 URL 열기
+  table_calendar: ^3.0.6 #달력
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

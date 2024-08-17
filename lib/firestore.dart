@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'board_content.dart';
 import 'dart:io';
+import 'calendar.dart';
 
 //firestore에 이미지를 선택하고 저장한 뒤 해당 이미지 주소를 리턴하는 함수
 Future<String> pickAndUploadImage(String email) async {
@@ -258,8 +259,12 @@ void deleteContentToFirestore(String id, String username) async {
 
 //firestore에 저장된 게시판 1개의 내용을 가져옴(수정된 내용)
 Future<Map<String, dynamic>?> getBoardContentFromFirestore(
-    BoardContent thisContent) async {
+    BoardContent thisContent,
+    {Duration delay = const Duration(milliseconds: 10)}) async {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  await Future.delayed(delay);
+
   QuerySnapshot querySnapshot = await firestore
       .collection('board')
       .where('id', isEqualTo: thisContent.id)
@@ -272,4 +277,59 @@ Future<Map<String, dynamic>?> getBoardContentFromFirestore(
   } else {
     return null;
   }
+}
+
+//달력에 넣은 정보를 firestore에 저장
+Future<void> addCalendarEventsToFirestore(
+    String email, Map<DateTime, List<Event>> events) async {
+  //firestore에서 조건에 맞는 문서 찾기
+  final firestore = FirebaseFirestore.instance;
+  QuerySnapshot querySnapshot = await firestore
+      .collection('user')
+      .where('email', isEqualTo: email)
+      .limit(1)
+      .get();
+
+  // Map<DateTime, List<Event>> -> Map<String, dynamic>으로 변환
+  Map<String, dynamic> json = {};
+  events.forEach((date, eventList) {
+    json[date.toIso8601String()] = eventList.map((e) => e.toJson()).toList();
+  });
+
+  if (querySnapshot.docs.isNotEmpty) {
+    for (var doc in querySnapshot.docs) {
+      await doc.reference.update({
+        'calendar': json,
+      });
+    }
+  }
+}
+
+//firestore에 저장된 정보 갖고오기
+Future<Map<DateTime, List<Event>>> getCalendarEventsFromFirestore(
+    String email) async {
+  Map<DateTime, List<Event>> events = {};
+
+  final firestore = FirebaseFirestore.instance;
+  QuerySnapshot querySnapshot = await firestore
+      .collection('user')
+      .where('email', isEqualTo: email)
+      .limit(1)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    var tempData = querySnapshot.docs.first.data() as Map<String, dynamic>?;
+    if (tempData != null && tempData.containsKey('calendar')) {
+      Map<String, dynamic> data = tempData['calendar'] as Map<String, dynamic>;
+
+      data.forEach((key, value) {
+        DateTime date = DateTime.parse(key);
+        List<Event> eventList = (value as List)
+            .map((e) => Event.fromJson(e as Map<String, dynamic>))
+            .toList();
+        events[date] = eventList;
+      });
+    }
+  }
+  return events;
 }

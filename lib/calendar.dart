@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user_status.dart';
+import 'firestore.dart';
 
 class Calendar extends StatelessWidget {
   const Calendar({super.key});
@@ -31,26 +32,22 @@ class _CalendarScreenState extends State<CalendarScreen>
   DateTime _focusedDay = DateTime.now(); //달력이 표시하는 달의 중심 날짜
   DateTime? _selectedDay; //사용자가 선택한 현재 날짜
 
-  Map<DateTime, List<Event>> events = {
-    DateTime.utc(2024, 8, 17): [
-      Event("놀러가기"),
-    ],
-    DateTime.utc(2024, 8, 18): [
-      Event("놀러가기"),
-      Event("공부하기"),
-    ],
-  };
+  Map<DateTime, List<Event>> events = {};
 
   String schedule = '';
+  bool loginTempCheck = false;
 
   @override
   void initState() {
     super.initState();
+    var userStatus = Provider.of<UserStatus>(context, listen: false);
+    setupCalendar(userStatus.email);
   }
 
   @override
   Widget build(BuildContext context) {
     var userStatus = Provider.of<UserStatus>(context);
+    loginTempCheck = userStatus.loginCheck;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -141,53 +138,67 @@ class _CalendarScreenState extends State<CalendarScreen>
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    constraints: BoxConstraints(maxHeight: 50),
-                    child: TextField(
-                      controller: _scheduleMainController,
-                      decoration: InputDecoration(
-                        hintText: _selectedDay != null
-                            ? '${_selectedDay!.month}월 ${_selectedDay!.day}일에 일정 추가'
-                            : '${_focusedDay.month}월 ${_focusedDay.day}일에 일정 추가',
-                        border: const OutlineInputBorder(),
-                        hintStyle: const TextStyle(color: Colors.grey),
+          if (userStatus.loginCheck)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      constraints: BoxConstraints(maxHeight: 50),
+                      child: TextField(
+                        controller: _scheduleMainController,
+                        decoration: InputDecoration(
+                          hintText: _selectedDay != null
+                              ? '${_selectedDay!.month}월 ${_selectedDay!.day}일에 일정 추가'
+                              : '${_focusedDay.month}월 ${_focusedDay.day}일에 일정 추가',
+                          border: const OutlineInputBorder(),
+                          hintStyle: const TextStyle(color: Colors.grey),
+                        ),
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        scrollPhysics: BouncingScrollPhysics(),
+                        onChanged: (value) {
+                          schedule = value;
+                        },
                       ),
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      scrollPhysics: BouncingScrollPhysics(),
-                      onChanged: (value) {
-                        schedule = value;
-                      },
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: () {
-                    Event append = Event(schedule);
-                    List<Event>? checkEventList = events[_selectedDay!];
-                    if (checkEventList == null) {
-                      events[_selectedDay!] = [append];
-                    } else {
-                      events[_selectedDay!]!.add(append);
-                    }
-                    schedule = "";
-                    setState(() {
-                      _scheduleMainController.clear();
-                    });
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: () {
+                      Event append = Event(schedule);
+                      List<Event>? checkEventList = events[_selectedDay!];
+                      if (checkEventList == null) {
+                        events[_selectedDay!] = [append];
+                      } else {
+                        events[_selectedDay!]!.add(append);
+                      }
+                      schedule = "";
+                      setState(() {
+                        _scheduleMainController.clear();
+                        addCalendarEventsToFirestore(userStatus.email, events);
+                        getCalendarEventsFromFirestore(userStatus.email);
+                        print('홈에서 클릭');
+                        print(events);
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
+  }
+
+  void setupCalendar(String email) async {
+    Map<DateTime, List<Event>> loadedEvents =
+        await getCalendarEventsFromFirestore(email);
+    setState(() {
+      events = loadedEvents;
+    });
   }
 
   //selectedDayPredicate에 사용되는 함수
@@ -198,7 +209,10 @@ class _CalendarScreenState extends State<CalendarScreen>
   //onDaySelected에 사용되는 함수
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (_selectedDay == selectedDay) {
-      showDayEventDialog(selectedDay);
+      if (loginTempCheck) {
+        var userStatus = Provider.of<UserStatus>(context, listen: false);
+        showDayEventDialog(selectedDay, userStatus.email);
+      }
     } else {
       setState(() {
         _selectedDay = selectedDay;
@@ -213,7 +227,7 @@ class _CalendarScreenState extends State<CalendarScreen>
   }
 
   //현재 날짜의 일정을 보여주는 dialog
-  void showDayEventDialog(DateTime selectedDay) {
+  void showDayEventDialog(DateTime selectedDay, String email) {
     List<String> weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
     List<Event>? todayEvents = events[selectedDay];
     final TextEditingController _scheduleController = TextEditingController();
@@ -265,7 +279,27 @@ class _CalendarScreenState extends State<CalendarScreen>
                             itemCount: todayEvents.length,
                             itemBuilder: (context, index) {
                               Event event = todayEvents[index];
-                              return ListTile(title: Text(event.content));
+                              return InkWell(
+                                onTap: () {},
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 10.0),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 2.0),
+                                  child: Row(
+                                    children: <Widget>[
+                                      const Icon(Icons.event_note,
+                                          size: 20.0, color: Colors.blue),
+                                      const VerticalDivider(
+                                        color: Colors.blue,
+                                        width: 10,
+                                        thickness: 10,
+                                      ),
+                                      Text(event.content),
+                                    ],
+                                  ),
+                                ),
+                              );
                             }),
                       ),
                 Padding(
@@ -306,8 +340,12 @@ class _CalendarScreenState extends State<CalendarScreen>
                           schedule = "";
                           setState(() {
                             _scheduleController.clear();
+                            addCalendarEventsToFirestore(email, events);
+                            getCalendarEventsFromFirestore(email);
+                            print('다이얼로그에서 클릭');
+                            print(events);
                             Navigator.pop(context);
-                            showDayEventDialog(selectedDay);
+                            showDayEventDialog(selectedDay, email);
                           });
                         },
                       ),
@@ -374,4 +412,14 @@ class Event {
   String content;
 
   Event(this.content);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'content': content,
+    };
+  }
+
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(json['content'] as String);
+  }
 }

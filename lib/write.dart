@@ -213,4 +213,11 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contextController.dispose();
+    super.dispose();
+  }
 }

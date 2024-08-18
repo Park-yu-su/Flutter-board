@@ -98,14 +98,14 @@ class _CalendarScreenState extends State<CalendarScreen>
                           return Center(
                             child: Text(
                               day.day.toString(),
-                              style: TextStyle(color: Colors.blue),
+                              style: const TextStyle(color: Colors.blue),
                             ),
                           );
                         } else if (day.weekday == DateTime.sunday) {
                           return Center(
                             child: Text(
                               day.day.toString(),
-                              style: TextStyle(color: Colors.red),
+                              style: const TextStyle(color: Colors.red),
                             ),
                           );
                         }
@@ -226,6 +226,169 @@ class _CalendarScreenState extends State<CalendarScreen>
     return events[day] ?? [];
   }
 
+  //선택한 날짜의 일정을 수정/삭제하는 함수
+  void modifyScheduleDialog(
+      int index, Event event, DateTime selectedDay, String email) {
+    final TextEditingController _modifyController =
+        TextEditingController(text: event.content);
+    String modifyContent = event.content;
+    var userStatus = Provider.of<UserStatus>(context, listen: false);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            constraints: const BoxConstraints(
+              minWidth: 150.0, // 최소 너비
+              minHeight: 300.0, // 최소 높이
+              maxHeight: 300.0, // 최대 높이
+            ),
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '일정 변경/삭제',
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15.0),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _modifyController,
+                    decoration: const InputDecoration(
+                      hintText: "일정",
+                      border: UnderlineInputBorder(),
+                      hintStyle: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 15.0,
+                      ),
+                    ),
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    scrollPhysics: BouncingScrollPhysics(),
+                    onChanged: (value) {
+                      modifyContent = value;
+                    },
+                  ),
+                ),
+                const Spacer(),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          events[selectedDay]![index].content = modifyContent;
+                          addCalendarEventsToFirestore(
+                              userStatus.email, events);
+                          getCalendarEventsFromFirestore(userStatus.email);
+                          Navigator.pop(context);
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.create,
+                                color: Colors.black,
+                                size: 25.0,
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                '편집',
+                                style: TextStyle(
+                                  fontSize: 10.0, // 텍스트 크기
+                                  color: Colors.black, // 텍스트 색상
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 40),
+                      InkWell(
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  content: const Text('이 일정을 삭제하시겠습니까?'),
+                                  actions: <Widget>[
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            events[selectedDay]!
+                                                .removeAt(index);
+                                            addCalendarEventsToFirestore(
+                                                userStatus.email, events);
+                                            getCalendarEventsFromFirestore(
+                                                userStatus.email);
+
+                                            setState(() {});
+
+                                            Navigator.pop(context);
+                                            Navigator.pop(context);
+                                            _modifyController.dispose();
+                                          },
+                                          child: const Text('확인'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('취소'),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              });
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.delete,
+                                color: Colors.black,
+                                size: 25.0,
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                '삭제',
+                                style: TextStyle(
+                                  fontSize: 10.0, // 텍스트 크기
+                                  color: Colors.black, // 텍스트 색상
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      showDayEventDialog(selectedDay, email);
+    });
+  }
+
   //현재 날짜의 일정을 보여주는 dialog
   void showDayEventDialog(DateTime selectedDay, String email) {
     List<String> weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
@@ -280,7 +443,13 @@ class _CalendarScreenState extends State<CalendarScreen>
                             itemBuilder: (context, index) {
                               Event event = todayEvents[index];
                               return InkWell(
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    modifyScheduleDialog(
+                                        index, event, selectedDay, email);
+                                  });
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 8.0, horizontal: 10.0),
@@ -342,8 +511,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                             _scheduleController.clear();
                             addCalendarEventsToFirestore(email, events);
                             getCalendarEventsFromFirestore(email);
-                            print('다이얼로그에서 클릭');
-                            print(events);
+
                             Navigator.pop(context);
                             showDayEventDialog(selectedDay, email);
                           });
@@ -404,6 +572,12 @@ class _CalendarScreenState extends State<CalendarScreen>
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _scheduleMainController.dispose();
+    super.dispose();
   }
 }
 

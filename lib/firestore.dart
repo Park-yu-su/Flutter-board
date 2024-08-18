@@ -260,7 +260,7 @@ void deleteContentToFirestore(String id, String username) async {
 //firestore에 저장된 게시판 1개의 내용을 가져옴(수정된 내용)
 Future<Map<String, dynamic>?> getBoardContentFromFirestore(
     BoardContent thisContent,
-    {Duration delay = const Duration(milliseconds: 10)}) async {
+    {Duration delay = const Duration(milliseconds: 300)}) async {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   await Future.delayed(delay);

@@ -85,10 +85,13 @@ Future<Map<String, dynamic>?> getUserInfoFromFirestore(String email) async {
 //게시글 삭제&수정 시 이를 지속적으로 실시간 반영해주어야 하기 떄문에
 //한 번의 비동기 작업을 수행하는 FutureBuilder 대신에
 //실시간으로 데이터를 지속적으로 업데이트하는 StreamBuilder를 사용
-Stream<List<Map<String, dynamic>>> getBoardFromFirestore(int mode) {
+Stream<List<Map<String, dynamic>>> getBoardFromFirestore(int mode,
+    bool searchResultShow, String searchOption, String searchContent) {
   Stream<List<Map<String, dynamic>>> boardList;
 
   Stream<QuerySnapshot> querySnapshotStream;
+
+  print("$searchResultShow | $searchOption | $searchContent");
 
   switch (mode) {
     case 1:
@@ -134,6 +137,56 @@ Stream<List<Map<String, dynamic>>> getBoardFromFirestore(int mode) {
       return doc.data() as Map<String, dynamic>;
     }).toList();
   });
+
+  //검색
+  if (searchResultShow) {
+    if (searchOption == '제목/내용') {
+      boardList = querySnapshotStream.map((querySnapshot) {
+        return querySnapshot.docs.map((doc) {
+          return doc.data() as Map<String, dynamic>;
+        }).where((doc) {
+          String title = doc['title'].toString().toLowerCase();
+          String content = doc['content'].toString().toLowerCase();
+
+          return title.contains(searchContent.toLowerCase()) ||
+              content.contains(searchContent.toLowerCase());
+        }).toList();
+      });
+    }
+    //제목을 검색
+    else if (searchOption == '제목') {
+      boardList = querySnapshotStream.map((querySnapshot) {
+        return querySnapshot.docs.map((doc) {
+          return doc.data() as Map<String, dynamic>;
+        }).where((doc) {
+          String title = doc['title'].toString().toLowerCase();
+          return title.contains(searchContent.toLowerCase());
+        }).toList();
+      });
+    }
+    //내용을 검색
+    else if (searchOption == '내용') {
+      boardList = querySnapshotStream.map((querySnapshot) {
+        return querySnapshot.docs.map((doc) {
+          return doc.data() as Map<String, dynamic>;
+        }).where((doc) {
+          String content = doc['content'].toString().toLowerCase();
+          return content.contains(searchContent.toLowerCase());
+        }).toList();
+      });
+    }
+    //글쓴이를 검색
+    else if (searchOption == '글쓴이') {
+      boardList = querySnapshotStream.map((querySnapshot) {
+        return querySnapshot.docs.map((doc) {
+          return doc.data() as Map<String, dynamic>;
+        }).where((doc) {
+          String author = doc['author'].toString().toLowerCase();
+          return author == searchContent.toLowerCase();
+        }).toList();
+      });
+    }
+  }
 
   return boardList;
 }

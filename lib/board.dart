@@ -38,6 +38,13 @@ class _BoardScreenState extends State<BoardScreen>
   int textPerPage = 10; //한 페이지에 보여주는 게시글 수
   int pages = 0; //총 페이지 수
 
+  bool searchWidgetshow = false; //search Widget 여부 바꾸기
+  bool searchResultshow = false; //게시글에 검색결과 보여주기 or not
+  String searchOption = "제목/내용";
+  String searchContent = "";
+  final TextEditingController _searchContentController =
+      TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +57,135 @@ class _BoardScreenState extends State<BoardScreen>
       //setState로 화면 갱신 필요X tab이 바뀌며 알아서 setState
       currentPage = 0;
     }
+  }
+
+  //게시글 검색 위젯
+  Widget buildSearchPageWidget() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 25,
+            child: Container(
+              alignment: Alignment.center,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.black, width: 1.0),
+                  bottom: BorderSide(color: Colors.black, width: 1.0),
+                  left: BorderSide(color: Colors.black, width: 1.0),
+                  right: BorderSide.none,
+                ),
+                borderRadius: BorderRadius.horizontal(
+                  left: Radius.circular(5.0),
+                ),
+              ),
+              child: DropdownButton<String>(
+                underline: const SizedBox.shrink(),
+                borderRadius: BorderRadius.circular(10),
+                dropdownColor: Colors.white,
+                elevation: 0,
+                value: searchOption,
+                isExpanded: true,
+                items: <String>['제목/내용', '제목', '내용', '글쓴이']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5.0),
+                      child: Center(
+                        child: Text(
+                          value,
+                          style: const TextStyle(
+                            fontSize: 12.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    searchOption = newValue!;
+                  });
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 60,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 5.0),
+              height: 40,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black, width: 1.0),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 55,
+                    child: TextField(
+                      controller: _searchContentController,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 13),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) {
+                        searchContent = value;
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    flex: 10,
+                    child: IconButton(
+                        onPressed: () {
+                          if (searchContent.isNotEmpty) {
+                            setState(() {
+                              searchResultshow = true;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.search)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 10,
+            child: Container(
+              alignment: Alignment.center,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.black, width: 1.0),
+                  bottom: BorderSide(color: Colors.black, width: 1.0),
+                  left: BorderSide.none,
+                  right: BorderSide(color: Colors.black, width: 1.0),
+                ),
+                borderRadius: BorderRadius.horizontal(
+                  right: Radius.circular(5.0),
+                ),
+              ),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  setState(() {
+                    searchWidgetshow = false;
+                    searchResultshow = false;
+                    searchContent = ""; //초기화
+                    _searchContentController.clear();
+                  });
+                },
+                icon: const Icon(Icons.close),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -79,26 +215,50 @@ class _BoardScreenState extends State<BoardScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        DateTime.now();
-                      });
-                    },
-                    icon: Icon(Icons.search),
+                  padding: const EdgeInsets.only(left: 10, top: 5),
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black, width: 1.0),
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        setState(() {
+                          if (searchWidgetshow == false) {
+                            searchWidgetshow = true;
+                          } else {
+                            searchWidgetshow = false;
+                          }
+                        });
+                      },
+                      icon: const Icon(Icons.search),
+                    ),
                   ),
                 ),
                 if (userStatus.loginCheck)
                   Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          navigateWrite(context);
-                        });
-                      },
-                      icon: Icon(Icons.create),
+                    padding: const EdgeInsets.only(right: 10, top: 5),
+                    child: Container(
+                      alignment: Alignment.center,
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 1.0),
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          setState(() {
+                            navigateWrite(context);
+                          });
+                        },
+                        icon: const Icon(Icons.create),
+                      ),
                     ),
                   ),
               ],
@@ -107,13 +267,15 @@ class _BoardScreenState extends State<BoardScreen>
               child: TabBarView(
                 controller: tabController,
                 children: [
-                  buildBoardList(1),
-                  buildBoardList(2),
-                  buildBoardList(3),
-                  buildBoardList(4),
+                  //옵션(탭 + search 유무)
+                  buildBoardList(1, searchResultshow),
+                  buildBoardList(2, searchResultshow),
+                  buildBoardList(3, searchResultshow),
+                  buildBoardList(4, searchResultshow),
                 ],
               ),
-            )
+            ),
+            if (searchWidgetshow) buildSearchPageWidget()
           ],
         ),
       ),
@@ -131,9 +293,10 @@ class _BoardScreenState extends State<BoardScreen>
   }
 
   //FutureBuilder 대신 StreamBuilder를 이용해 지속적으로 데이터를 받아오기
-  Widget buildBoardList(int mode) {
+  Widget buildBoardList(int mode, bool searchResultShow) {
     return StreamBuilder<List<Map<String, dynamic>>>(
-        stream: getBoardFromFirestore(mode),
+        stream: getBoardFromFirestore(
+            mode, searchResultShow, searchOption, searchContent),
         builder: (context, snapshot) {
           //로딩중(정보 가져오기)
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -170,7 +333,7 @@ class _BoardScreenState extends State<BoardScreen>
                         //분류, 제목, 작성자, 날짜
                         if (index == 0) {
                           return Container(
-                            color: Colors.grey[300],
+                            color: Colors.blue[100],
                             padding: const EdgeInsets.symmetric(
                                 vertical: 8.0, horizontal: 10.0),
                             child: const Row(
@@ -241,96 +404,108 @@ class _BoardScreenState extends State<BoardScreen>
                           DateTime datetime = timestamp.toDate();
                           String dayformat =
                               '${datetime.year}.${datetime.month}.${datetime.day}';
-                          return InkWell(
-                            onTap: () {
-                              //댓글 자료형 받아오기
-                              List<dynamic> dynamicList =
-                                  pageBoardData[realIndex]['comments'];
-                              List<Map<String, dynamic>> comments =
-                                  dynamicList.map((item) {
-                                return Map<String, dynamic>.from(item);
-                              }).toList();
+                          return Column(
+                            children: [
+                              const Divider(thickness: 1),
+                              InkWell(
+                                onTap: () {
+                                  //댓글 자료형 받아오기
+                                  List<dynamic> dynamicList =
+                                      pageBoardData[realIndex]['comments'];
+                                  List<Map<String, dynamic>> comments =
+                                      dynamicList.map((item) {
+                                    return Map<String, dynamic>.from(item);
+                                  }).toList();
 
-                              BoardContent thisContent = BoardContent(
-                                pageBoardData[realIndex]['title'] ?? '',
-                                pageBoardData[realIndex]['content'] ?? '',
-                                pageBoardData[realIndex]['author'] ?? '',
-                                pageBoardData[realIndex]['attribute'] ?? '',
-                                datetime,
-                                comments,
-                                pageBoardData[realIndex]['watch'] ?? 0,
-                                pageBoardData[realIndex]['id'] ?? '',
-                              );
+                                  BoardContent thisContent = BoardContent(
+                                    pageBoardData[realIndex]['title'] ?? '',
+                                    pageBoardData[realIndex]['content'] ?? '',
+                                    pageBoardData[realIndex]['author'] ?? '',
+                                    pageBoardData[realIndex]['attribute'] ?? '',
+                                    datetime,
+                                    comments,
+                                    pageBoardData[realIndex]['watch'] ?? 0,
+                                    pageBoardData[realIndex]['id'] ?? '',
+                                  );
 
-                              navigateContent(context, thisContent);
-                            },
-                            child: Container(
-                              color: Colors.grey[100],
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8.0, horizontal: 10.0),
-                              margin: const EdgeInsets.symmetric(vertical: 2.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 10,
-                                    child: Center(
-                                      child: Text(
-                                        pageBoardData[realIndex]['attribute'] ??
-                                            '',
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 40,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 5),
-                                      child: commentCount > 0
-                                          ? Text(
-                                              '${pageBoardData[realIndex]['title']}  [$commentCount]',
-                                              style:
-                                                  const TextStyle(fontSize: 14),
-                                            )
-                                          : Text(
-                                              pageBoardData[realIndex]
-                                                      ['title'] ??
-                                                  '',
-                                              style:
-                                                  const TextStyle(fontSize: 14),
-                                            ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 10,
-                                    child: Center(
-                                      child: Text(
-                                        pageBoardData[realIndex]['author'] ??
-                                            '',
-                                        style: const TextStyle(fontSize: 14),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                  const Expanded(
-                                    flex: 2,
-                                    child: SizedBox(),
-                                  ),
-                                  Expanded(
-                                    flex: 10,
-                                    child: FittedBox(
-                                      fit: BoxFit.contain,
-                                      child: Center(
-                                        child: Text(
-                                          dayformat,
-                                          style: const TextStyle(fontSize: 14),
-                                          textAlign: TextAlign.center,
+                                  navigateContent(context, thisContent);
+                                },
+                                child: Container(
+                                  color: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 10.0),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 2.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 10,
+                                        child: Center(
+                                          child: Text(
+                                            pageBoardData[realIndex]
+                                                    ['attribute'] ??
+                                                '',
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                      Expanded(
+                                        flex: 40,
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 5),
+                                          child: commentCount > 0
+                                              ? Text(
+                                                  '${pageBoardData[realIndex]['title']}  [$commentCount]',
+                                                  style: const TextStyle(
+                                                      fontSize: 14),
+                                                )
+                                              : Text(
+                                                  pageBoardData[realIndex]
+                                                          ['title'] ??
+                                                      '',
+                                                  style: const TextStyle(
+                                                      fontSize: 14),
+                                                ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 10,
+                                        child: Center(
+                                          child: Text(
+                                            pageBoardData[realIndex]
+                                                    ['author'] ??
+                                                '',
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                      const Expanded(
+                                        flex: 2,
+                                        child: SizedBox(),
+                                      ),
+                                      Expanded(
+                                        flex: 10,
+                                        child: FittedBox(
+                                          fit: BoxFit.contain,
+                                          child: Center(
+                                            child: Text(
+                                              dayformat,
+                                              style:
+                                                  const TextStyle(fontSize: 14),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           );
                         }
                       }),

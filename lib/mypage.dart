@@ -54,9 +54,12 @@ class _MypageScreenState extends State<MypageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("<< build");
     var userStatus = Provider.of<UserStatus>(context);
     loginCheck = userStatus.loginCheck;
-    username = userStatus.username;
+    if (userStatus.username != "") {
+      username = userStatus.username;
+    }
     userImageIcon = userStatus.imageIcon;
 
     return Scaffold(
@@ -186,26 +189,24 @@ class _MypageScreenState extends State<MypageScreen> {
     });
   }
 
-  void register() async {
+  void register(String inputname) async {
     setState(() {
       loadingCheck = true;
     });
-
+    //버그(해결) 회원가입에서 username 변수의 내용이 날라간다
+    //60번째 라인에서 Provider에서 username 가져올 때 "" 값이 IN (null값 비교)
     try {
       await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
       print('회원가입이 성공했습니다');
-      showContextDialog(context, "회원가입 성공", "$username님 회원가입이 완료되었습니다.");
-      addUserInfoToFirestore(username, email);
+      showContextDialog(context, "회원가입 성공", "$inputname님 회원가입이 완료되었습니다.");
+      addUserInfoToFirestore(inputname, email);
 
       setState(() {
         //초기화
         loadingCheck = false;
-        username = '';
-        email = '';
-        password = '';
       });
     } catch (e) {
       setState(() {
@@ -386,7 +387,7 @@ class _MypageScreenState extends State<MypageScreen> {
                           onPressed:
                               (passwordStatus == 1 && fillInfoStatus == true)
                                   ? () {
-                                      register();
+                                      register(username);
                                       context.pop();
                                     }
                                   : null,

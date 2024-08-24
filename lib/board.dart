@@ -7,6 +7,7 @@ import 'firestore.dart';
 import 'board_content.dart';
 import 'package:provider/provider.dart';
 import 'user_status.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class Board extends StatelessWidget {
   const Board({super.key});
@@ -57,135 +58,6 @@ class _BoardScreenState extends State<BoardScreen>
       //setState로 화면 갱신 필요X tab이 바뀌며 알아서 setState
       currentPage = 0;
     }
-  }
-
-  //게시글 검색 위젯
-  Widget buildSearchPageWidget() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 25,
-            child: Container(
-              alignment: Alignment.center,
-              height: 40,
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.black, width: 1.0),
-                  bottom: BorderSide(color: Colors.black, width: 1.0),
-                  left: BorderSide(color: Colors.black, width: 1.0),
-                  right: BorderSide.none,
-                ),
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(5.0),
-                ),
-              ),
-              child: DropdownButton<String>(
-                underline: const SizedBox.shrink(),
-                borderRadius: BorderRadius.circular(10),
-                dropdownColor: Colors.white,
-                elevation: 0,
-                value: searchOption,
-                isExpanded: true,
-                items: <String>['제목/내용', '제목', '내용', '글쓴이']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 5.0),
-                      child: Center(
-                        child: Text(
-                          value,
-                          style: const TextStyle(
-                            fontSize: 12.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    searchOption = newValue!;
-                  });
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 60,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 5.0),
-              height: 40,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black, width: 1.0),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 55,
-                    child: TextField(
-                      controller: _searchContentController,
-                      textAlignVertical: TextAlignVertical.center,
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(vertical: 13),
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (value) {
-                        searchContent = value;
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    flex: 10,
-                    child: IconButton(
-                        onPressed: () {
-                          if (searchContent.isNotEmpty) {
-                            setState(() {
-                              searchResultshow = true;
-                            });
-                          }
-                        },
-                        icon: const Icon(Icons.search)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 10,
-            child: Container(
-              alignment: Alignment.center,
-              height: 40,
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.black, width: 1.0),
-                  bottom: BorderSide(color: Colors.black, width: 1.0),
-                  left: BorderSide.none,
-                  right: BorderSide(color: Colors.black, width: 1.0),
-                ),
-                borderRadius: BorderRadius.horizontal(
-                  right: Radius.circular(5.0),
-                ),
-              ),
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  setState(() {
-                    searchWidgetshow = false;
-                    searchResultshow = false;
-                    searchContent = ""; //초기화
-                    _searchContentController.clear();
-                  });
-                },
-                icon: const Icon(Icons.close),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -489,15 +361,15 @@ class _BoardScreenState extends State<BoardScreen>
                                       ),
                                       Expanded(
                                         flex: 10,
-                                        child: FittedBox(
-                                          fit: BoxFit.contain,
-                                          child: Center(
-                                            child: Text(
-                                              dayformat,
-                                              style:
-                                                  const TextStyle(fontSize: 14),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                        child: Center(
+                                          child: AutoSizeText(
+                                            dayformat,
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                            textAlign: TextAlign.center,
+                                            maxFontSize: 14,
+                                            minFontSize: 5,
+                                            maxLines: 1,
                                           ),
                                         ),
                                       ),
@@ -522,6 +394,135 @@ class _BoardScreenState extends State<BoardScreen>
             );
           }
         });
+  }
+
+  //게시글 검색 위젯
+  Widget buildSearchPageWidget() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 25,
+            child: Container(
+              alignment: Alignment.center,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.black, width: 1.0),
+                  bottom: BorderSide(color: Colors.black, width: 1.0),
+                  left: BorderSide(color: Colors.black, width: 1.0),
+                  right: BorderSide.none,
+                ),
+                borderRadius: BorderRadius.horizontal(
+                  left: Radius.circular(5.0),
+                ),
+              ),
+              child: DropdownButton<String>(
+                underline: const SizedBox.shrink(),
+                borderRadius: BorderRadius.circular(10),
+                dropdownColor: Colors.white,
+                elevation: 0,
+                value: searchOption,
+                isExpanded: true,
+                items: <String>['제목/내용', '제목', '내용', '글쓴이']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5.0),
+                      child: Center(
+                        child: Text(
+                          value,
+                          style: const TextStyle(
+                            fontSize: 12.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    searchOption = newValue!;
+                  });
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 60,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 5.0),
+              height: 40,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black, width: 1.0),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 55,
+                    child: TextField(
+                      controller: _searchContentController,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 13),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) {
+                        searchContent = value;
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    flex: 10,
+                    child: IconButton(
+                        onPressed: () {
+                          if (searchContent.isNotEmpty) {
+                            setState(() {
+                              searchResultshow = true;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.search)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 10,
+            child: Container(
+              alignment: Alignment.center,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.black, width: 1.0),
+                  bottom: BorderSide(color: Colors.black, width: 1.0),
+                  left: BorderSide.none,
+                  right: BorderSide(color: Colors.black, width: 1.0),
+                ),
+                borderRadius: BorderRadius.horizontal(
+                  right: Radius.circular(5.0),
+                ),
+              ),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  setState(() {
+                    searchWidgetshow = false;
+                    searchResultshow = false;
+                    searchContent = ""; //초기화
+                    _searchContentController.clear();
+                  });
+                },
+                icon: const Icon(Icons.close),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   //페이지 버튼 widget들이 담긴 배열을 리턴하는 함수

@@ -45,6 +45,7 @@ dependencies:
   flutter_linkify: ^6.0.0 #게시글에서 URL 자동 인식
   url_launcher: ^6.0.20 #내부 앱에서 URL 열기
   table_calendar: ^3.0.6 #달력
+  auto_size_text: ^3.0.0 #텍스트의 사이즈를 유동적으로 변환 가능
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

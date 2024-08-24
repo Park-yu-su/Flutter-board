@@ -41,7 +41,6 @@ Future<String> pickAndUploadImage(String email) async {
           });
         }
       } else {
-        print('No documents in database');
         return "";
       }
 
@@ -80,6 +79,36 @@ Future<Map<String, dynamic>?> getUserInfoFromFirestore(String email) async {
   return user;
 }
 
+//firebase에 저장된 채팅 정보를 가져오기
+Stream<List<Map<String, dynamic>>> getChatFromFirestore() {
+  Stream<List<Map<String, dynamic>>> chatList;
+  Stream<QuerySnapshot> querySnapshotStream;
+
+  querySnapshotStream = FirebaseFirestore.instance
+      .collection('chat')
+      .orderBy('time', descending: false)
+      .snapshots();
+
+  chatList = querySnapshotStream.map((querySnapshot) {
+    return querySnapshot.docs.map((doc) {
+      return doc.data() as Map<String, dynamic>;
+    }).toList();
+  });
+
+  return chatList;
+}
+
+//firebase에 채팅 정보 추가하기
+void addChatToFirestore(
+    String user, String content, String icon, DateTime time) async {
+  await FirebaseFirestore.instance.collection('chat').add({
+    'username': user,
+    'content': content,
+    'userIcon': icon,
+    'time': Timestamp.fromDate(time),
+  });
+}
+
 //게시판 data를 firestore에서 받아온다
 //FutureBuilder -> StreamBuilder로 변경
 //게시글 삭제&수정 시 이를 지속적으로 실시간 반영해주어야 하기 떄문에
@@ -90,8 +119,6 @@ Stream<List<Map<String, dynamic>>> getBoardFromFirestore(int mode,
   Stream<List<Map<String, dynamic>>> boardList;
 
   Stream<QuerySnapshot> querySnapshotStream;
-
-  print("$searchResultShow | $searchOption | $searchContent");
 
   switch (mode) {
     case 1:
@@ -260,8 +287,6 @@ void addContentToFirestore(BoardContent content) async {
     'comments': content.comments,
     'id': content.id,
   });
-
-  print('add OK ${content.time}\n ${content.id}');
 }
 
 //firestore에 있는 게시글을 업데이트한다.
@@ -287,8 +312,6 @@ void updateContentToFirestore(BoardContent content) async {
         'id': content.id,
       });
     }
-  } else {
-    print('No documents in database');
   }
 }
 
@@ -305,8 +328,6 @@ void deleteContentToFirestore(String id, String username) async {
     for (var doc in querySnapshot.docs) {
       await doc.reference.delete();
     }
-  } else {
-    print('No documents in database');
   }
 }
 

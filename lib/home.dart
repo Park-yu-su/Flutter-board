@@ -5,6 +5,7 @@ import 'dart:io';
 import 'mypage.dart';
 import 'calendar.dart';
 import 'board.dart';
+import 'livetalk.dart';
 import 'package:go_router/go_router.dart';
 import 'user_status.dart';
 
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     //이동할 페이지
     final List<TabData> _tabData = <TabData>[
       TabData('Home', const Board(), Icons.home),
-      TabData('Livetalk', const Mypage(), Icons.chat),
+      TabData('Livetalk', const Livetalk(), Icons.chat),
       TabData('Calendar', const Calendar(), Icons.calendar_month),
       TabData('MyPage', const Mypage(), Icons.account_circle),
     ];

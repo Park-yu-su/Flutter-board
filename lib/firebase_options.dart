@@ -40,7 +40,49 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDTt8MOINtuDSszAC6qtJQRjLjk4z8pdhQ',
+    appId: '1:450934451399:web:7404c168f7439392a262e2',
+    messagingSenderId: '450934451399',
+    projectId: 'notice-board-fa6ce',
+    authDomain: 'notice-board-fa6ce.firebaseapp.com',
+    storageBucket: 'notice-board-fa6ce.appspot.com',
+    measurementId: 'G-FH1JVQEP0X',
+  );
 
-  //firebase에서 flutter 연동을 통해 firebase_options.dart에 존재하는 코드 사용
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyCwQRDcG6q5on0Cx8OqMP8Ct4WJU5F2YB0',
+    appId: '1:450934451399:android:fc18547b15976c54a262e2',
+    messagingSenderId: '450934451399',
+    projectId: 'notice-board-fa6ce',
+    storageBucket: 'notice-board-fa6ce.appspot.com',
+  );
 
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAYXeXnvML4rFRrE7QgLkN_bJ--vktka2w',
+    appId: '1:450934451399:ios:0e6c859b69bf1a89a262e2',
+    messagingSenderId: '450934451399',
+    projectId: 'notice-board-fa6ce',
+    storageBucket: 'notice-board-fa6ce.appspot.com',
+    iosBundleId: 'com.example.boardProject',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyAYXeXnvML4rFRrE7QgLkN_bJ--vktka2w',
+    appId: '1:450934451399:ios:0e6c859b69bf1a89a262e2',
+    messagingSenderId: '450934451399',
+    projectId: 'notice-board-fa6ce',
+    storageBucket: 'notice-board-fa6ce.appspot.com',
+    iosBundleId: 'com.example.boardProject',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDTt8MOINtuDSszAC6qtJQRjLjk4z8pdhQ',
+    appId: '1:450934451399:web:aa1b363e7902b348a262e2',
+    messagingSenderId: '450934451399',
+    projectId: 'notice-board-fa6ce',
+    authDomain: 'notice-board-fa6ce.firebaseapp.com',
+    storageBucket: 'notice-board-fa6ce.appspot.com',
+    measurementId: 'G-Y2R8RTR22T',
+  );
 }

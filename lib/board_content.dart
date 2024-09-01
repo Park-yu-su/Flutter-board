@@ -1,3 +1,5 @@
+//게시글에 필요한 요소가 담긴 class
+
 class BoardContent {
   String title; //제목
   String content; //본문

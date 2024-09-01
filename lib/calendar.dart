@@ -180,8 +180,6 @@ class _CalendarScreenState extends State<CalendarScreen>
                         _scheduleMainController.clear();
                         addCalendarEventsToFirestore(userStatus.email, events);
                         getCalendarEventsFromFirestore(userStatus.email);
-                        print('홈에서 클릭');
-                        print(events);
                       });
                     },
                   ),

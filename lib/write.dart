@@ -117,8 +117,12 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: DropdownButton<String>(
+                borderRadius: BorderRadius.circular(10),
+                underline: const SizedBox.shrink(),
+                dropdownColor: Colors.white,
                 value: selectedCategory,
                 isExpanded: true,
+                elevation: 0,
                 items: <String>['공지', '정보', '잡담']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
@@ -127,7 +131,7 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
                       padding: const EdgeInsets.only(left: 5.0),
                       child: Text(
                         value,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -195,7 +199,7 @@ class _WriteScreenState extends State<Write> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            SizedBox(height: 50.0),
+            const SizedBox(height: 70.0),
             Center(
               child: ElevatedButton(
                 onPressed: () {

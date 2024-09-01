@@ -39,7 +39,7 @@ class _ContentScreenState extends State<Content> with TickerProviderStateMixin {
 
     DateTime now = thisContent.time;
     String dayformat =
-        '${now.year}.${now.month}.${now.day} ${now.hour}:${now.minute}:${now.second}';
+        '${now.year}.${now.month}.${now.day} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -300,7 +300,7 @@ class CommentFormat extends StatelessWidget {
   Widget build(BuildContext context) {
     DateTime now = commentTimestamp.toDate();
     String dayformat =
-        '${now.year}.${now.month}.${now.day} ${now.hour}:${now.minute}:${now.second}';
+        '${now.year}.${now.month}.${now.day} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

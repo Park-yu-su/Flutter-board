@@ -54,7 +54,6 @@ class _MypageScreenState extends State<MypageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("<< build");
     var userStatus = Provider.of<UserStatus>(context);
     loginCheck = userStatus.loginCheck;
     if (userStatus.username != "") {
@@ -200,7 +199,7 @@ class _MypageScreenState extends State<MypageScreen> {
         email: email,
         password: password,
       );
-      print('회원가입이 성공했습니다');
+
       showContextDialog(context, "회원가입 성공", "$inputname님 회원가입이 완료되었습니다.");
       addUserInfoToFirestore(inputname, email);
 
@@ -427,28 +426,6 @@ class _MypageScreenState extends State<MypageScreen> {
                     const SizedBox(height: 20),
                     Stack(
                       children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              context.pop();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              fixedSize: const Size(20, 20),
-                              padding: EdgeInsets.zero,
-                              backgroundColor:
-                                  const Color.fromRGBO(233, 236, 239, 50),
-                            ),
-                            child: const Icon(
-                              Icons.arrow_back,
-                              size: 20,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
                         Center(
                           child: Text('로그인',
                               style: TextStyle(fontWeight: FontWeight.bold)),

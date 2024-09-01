@@ -108,9 +108,6 @@ class _LivetalkScreenState extends State<Livetalk> {
                             checkOneminuteResult = true;
                           }
                         }
-                        //다음 거랑 비교 용도
-                        checkSameuser = nowUser;
-                        checkOneminute = nowTime;
 
                         //새로운 날이 될 때 첫 게시글에 날짜 표시
                         if (index == 0) {
@@ -122,6 +119,10 @@ class _LivetalkScreenState extends State<Livetalk> {
                         } else {
                           checkNewday = false;
                         }
+
+                        //다음 거랑 비교 용도
+                        checkSameuser = nowUser;
+                        checkOneminute = nowTime;
 
                         //1분단위 + 새로운 날 비교 결과 채팅 위젯 리턴
                         if (checkOneminuteResult) {
@@ -282,7 +283,7 @@ Widget buildChatWidget(BuildContext context, String username, String userIcon,
               children: [
                 Center(
                   child: Container(
-                    width: MediaQuery.of(context).size.width * 0.4,
+                    width: MediaQuery.of(context).size.width * 0.6,
                     height: 25,
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 213, 211, 211)
@@ -333,7 +334,7 @@ Widget buildChatWidget(BuildContext context, String username, String userIcon,
           SizedBox(height: 5),
           ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.6, // 최대 가로 길이 설정
+              maxWidth: MediaQuery.of(context).size.width * 0.6,
             ),
             child: Container(
               padding: EdgeInsets.all(10),
